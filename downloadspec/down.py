@@ -8,3 +8,5 @@ f.close()
 for i in range(0,len(fitsurl)):
     urldown = fitsurl[i]
     wget.download(urldown, "downloads")
+
+#testing commit feature
