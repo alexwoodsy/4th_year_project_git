@@ -1,0 +1,5 @@
+https://data.sdss.org/sas/dr14/sdss/spectro/redux/26/spectra/lite/0708/spec-0708-52175-0153.fits
+https://data.sdss.org/sas/dr14/sdss/spectro/redux/26/spectra/lite/0708/spec-0708-52175-0554.fits
+https://data.sdss.org/sas/dr14/eboss/spectro/redux/v5_10_0/spectra/lite/4242/spec-4242-55476-0238.fits
+https://data.sdss.org/sas/dr14/eboss/spectro/redux/v5_10_0/spectra/lite/4242/spec-4242-55476-0264.fits
+https://data.sdss.org/sas/dr14/eboss/spectro/redux/v5_10_0/spectra/lite/7820/spec-7820-56984-0276.fits
