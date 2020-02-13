@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
 
-data = fits.getdata('Testing/spec-0266-51602-0050.fits',ext=1)#import fits image
+data = fits.getdata('downloadspec/downloads/spec-7820-56984-0276.fits',ext=1)#import fits image
 print(data)
 wlim = 1500
 flux = np.zeros(len(data))
