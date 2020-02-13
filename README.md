@@ -1,4 +1,4 @@
-# Quasar probing galaxy clusters
+# Quasars Probing Galaxy Clusters
 
 gettin dat ly alpha
 
@@ -8,7 +8,7 @@ satisfiying hatch since 2019
 
 ### Prerequisites
 
-a big brain
+a -big- massive brain
 
 ```
 Jason Lunn
