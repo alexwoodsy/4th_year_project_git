@@ -8,7 +8,7 @@ satisfiying hatch since 2019
 
 ### Prerequisites
 
-a ---big--- massive brain
+a <s>big</s> massive brain
 
 ```
 Jason Lunn
