@@ -17,7 +17,7 @@ Alex Woods
 
 ## Changelog
 
-sorting some major gittinging
+sorting some major gittttt
 
 ## Built With
 
