@@ -17,7 +17,7 @@ Alex Woods
 
 ## Changelog
 
-sorting some major git
+sorting some major gitting
 
 ## Built With
 
