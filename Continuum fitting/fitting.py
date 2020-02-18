@@ -3,21 +3,25 @@ import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
 
-data = fits.getdata('downloadspec/downloads/spec-7820-56984-0276.fits',ext=1)#import fits image
-print(data)
-wlim = 1500
+data = fits.getdata('Spectra/spec-0834-52316-0243.fits',ext=1)#import fits image
+wlim = 3000
 flux = np.zeros(len(data))
 wlen = np.zeros(len(data))
 model = np.zeros(len(data))
+ivar = np.zeros(len(data))
 
 for i in range(0,len(data)):
  flux[i] = data[i][0]
+ ivar[i] = data[i][2]
  model[i] = data[i][7]
  wlen[i] = 10**(data[i][1])
 
-out = flux-model
 
-plt.plot(wlen[0:wlim],out[0:wlim])
+ston = np.median(flux*(ivar))
+print(ston)
+
+plt.plot(wlen[0:wlim],model[0:wlim])
+#plt.plot(wlen[0:wlim],model[0:wlim])
 plt.xlabel('wavelength (Angstroms)')
 plt.ylabel('Flux')
 
