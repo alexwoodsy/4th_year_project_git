@@ -2,10 +2,6 @@
 
 gettin dat ly alpha
 
-## Getting Started
-
-satisfiying hatch since 2019
-
 ### Prerequisites
 
 a <s>big</s> massive brain
