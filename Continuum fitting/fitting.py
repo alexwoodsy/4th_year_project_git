@@ -2,8 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
+import os
 
-data = fits.getdata('Spectra/spec-0834-52316-0243.fits',ext=1)#import fits image
+specnames = next(os.walk('Spectra'))[2] #dir is your directory path as string
+spectot = len(specnames)
+
+#add indexing for epctra in file to allow loop over all
+i=10
+specdirectory = 'Spectra/'+specnames[i]
+print(specdirectory)
+
+data = fits.getdata(specdirectory,ext=1)#import fits image
 wlim = 3000
 flux = np.zeros(len(data))
 wlen = np.zeros(len(data))
