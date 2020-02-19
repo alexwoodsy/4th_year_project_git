@@ -16,11 +16,11 @@ for i in range(0,len(data)):
  model[i] = data[i][7]
  wlen[i] = 10**(data[i][1])
 
+std = (ivar)**-0.5
+ston = np.median(flux/std)
+print("S/N ratio = ",ston)
 
-ston = np.median(flux*(ivar))
-print(ston)
-
-plt.plot(wlen[0:wlim],model[0:wlim])
+plt.plot(wlen[0:wlim],flux[0:wlim])
 #plt.plot(wlen[0:wlim],model[0:wlim])
 plt.xlabel('wavelength (Angstroms)')
 plt.ylabel('Flux')
