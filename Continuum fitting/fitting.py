@@ -2,14 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
-from scipy.interpolate import interp1d
+from scipy import interpolate
 import os
 
 specnames = next(os.walk('Spectra'))[2] #dir is your directory path as string
 spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
-i=1
+i=100
 specdirectory = 'Spectra/'+specnames[i]
 print(specdirectory)
 
@@ -33,7 +33,7 @@ print("S/N ratio = ",ston)
 
 
 #cont fitting
-intervals = 30
+intervals = 10
 window = int(len(data)/intervals)
 step = 0
 i = 0
@@ -48,15 +48,24 @@ while (step+window) <= len(data):
     step = step + window
     i = i + 1
 
-intpol = interp1d(intervalwlen, winpeak, kind='cubic')
-xnew = np.linspace(intervalwlen[0],intervalwlen[-1], num=100, endpoint=True)
+intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
+xnew = np.linspace(intervalwlen[0],intervalwlen[-1], num=len(data), endpoint=True)
+ynew = intpol(xnew)
+
+norm = flux-ynew
+
 
 
 #plotting
-
+plt.figure()
 plt.plot(wlen[0:wlim],flux[0:wlim])
 plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
-plt.plot(xnew,intpol(xnew),'--')
+plt.plot(xnew,ynew,'--')
+plt.xlabel('wavelength (Angstroms)')
+plt.ylabel('Flux')
+
+plt.figure()
+plt.plot(wlen[0:wlim],norm,'r')
 plt.xlabel('wavelength (Angstroms)')
 plt.ylabel('Flux')
 
