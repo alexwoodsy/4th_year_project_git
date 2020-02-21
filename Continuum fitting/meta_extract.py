@@ -8,11 +8,9 @@ specnames = next(os.walk('Spectra'))[2] #dir is your directory path as string
 spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
-number = 20
+number = 200
 redshift = np.zeros(number)
 snmedian = np.zeros(number)
-
-fitdata = fits.getdata(('Spectra/'+specnames[0]),ext=2)#import fits image
 
 for i in range(0,number):
     specdirectory = 'Spectra/'+specnames[i]
