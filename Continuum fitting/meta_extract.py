@@ -8,7 +8,7 @@ specnames = next(os.walk('Spectra'))[2] #dir is your directory path as string
 spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
-number = 200
+number = 20
 redshift = np.zeros(number)
 snmedian = np.zeros(number)
 

@@ -10,14 +10,13 @@ spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
 #specind=1
-specsample = np.array([0,10,1000,2000])
+specsample = np.array([1000])
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
     print(specdirectory)
     data = fits.getdata(specdirectory,ext=1)#import fits image
     speclen = len(data)
-    wlim = speclen
     flux = np.zeros(speclen)
     wlen = np.zeros(speclen)
     model = np.zeros(speclen)
@@ -72,8 +71,8 @@ for specind in specsample:
     ynew = intpol(xnew)
 
     norm = flux-ynew
-
-    plt.plot(wlen[0:wlim],norm,label=specnames[specind])
+    wlim = speclen
+    plt.plot(wlen[0:wlim],norm[0:wlim],label=specnames[specind])
     plt.xlabel('wavelength (Angstroms)')
     plt.ylabel('Flux')
 
@@ -83,14 +82,8 @@ plt.legend()
 #plotting last processed spectra showing continuum removal
 plt.figure()
 plt.plot(wlen[0:wlim],flux[0:wlim])
-plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
-plt.plot(xnew,ynew,'--')
+#plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
+plt.plot(xnew[0:wlim],ynew[0:wlim],'--')
 plt.xlabel('wavelength (Angstroms)')
 plt.ylabel('Flux')
-
-plt.figure()
-plt.plot(wlen[0:wlim],norm,'r')
-plt.xlabel('wavelength (Angstroms)')
-plt.ylabel('Flux')
-plt.legend()
 plt.show()
