@@ -10,11 +10,11 @@ spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
 #specind=1
-specsample = np.array([1000])
+specsample = np.array([0])
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
-    print(specdirectory)
+    #print(specdirectory)
     data = fits.getdata(specdirectory,ext=1)#import fits image
     speclen = len(data)
     flux = np.zeros(speclen)
@@ -28,62 +28,57 @@ for specind in specsample:
      model[i] = data[i][7]
      wlen[i] = 10**(data[i][1])
 
-    #ston calculation
-    std = (ivar)**-0.5
-    ston = np.median(flux/std)
-    print("S/N ratio = ",ston)
+ #meta data extraction to get z:
+    fitdata = fits.getdata(specdirectory,ext=2)#import fits image
+    metasize = len(fitdata[0])
+    #print(metasize)
+    if metasize == 126:
+         redshift = fitdata[0][63]
+    else:
+         redshift = fitdata[0][38]
 
 
-    #cont fitting
-    intervals = 10
+    lyalphacalc = 1215.67*(1+redshift)#calc lya using redshift
+    print('lyalpha = ',lyalphacalc)
+    lyalphaind = (np.abs(wlen - lyalphacalc)).argmin()#finds index of nearest point in data
+
+
+#fitting:
+    intervals = 60
     window = int(speclen/intervals)
     windowwlen = wlen[window]-wlen[0]
+    print(windowwlen)
     step = 0
     i = 0
     intervalwlen = np.zeros(intervals)
     winpeak = np.zeros(intervals)
 
-    def findmean(array):
+    def findavg(array):
         array = np.asarray(array)
-        ind = (np.abs(array - np.mean(array))).argmin()
+        ind = (np.abs(array - np.max(array))).argmin()
         return ind
 
     while (step+window) <= speclen:
         windata = flux[step:(step+window)]
-        winpeakind = step + findmean(windata)
+        winpeakind = step + findavg(windata)
         winpeak[i] = flux[winpeakind]
         intervalwlen[i] = wlen[winpeakind]
-        if i>0 and (intervalwlen[i]-intervalwlen[i-1]) < windowwlen:
-            if winpeak[i] <= winpeak[i-1]:
-                winpeak[i] = intervalwlen[i] = 0
-            else:
-                winpeak[i-1] = intervalwlen[i-1] = 0
         step = step + window
         i = i + 1
-
-    winpeak = winpeak[winpeak != 0]
-    intervalwlen = intervalwlen[intervalwlen != 0]
-
-
 
     intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
     xnew = np.linspace(intervalwlen[0],intervalwlen[-1], num=speclen, endpoint=True)
     ynew = intpol(xnew)
 
-    norm = flux-ynew
+
+#plotting:
     wlim = speclen
-    plt.plot(wlen[0:wlim],norm[0:wlim],label=specnames[specind])
+    plt.plot(wlen[0:wlim],flux[0:wlim],label=specnames[specind])
+    plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
+    plt.plot(xnew[0:wlim],ynew[0:wlim],'--')
+    plt.plot(wlen[lyalphaind],flux[lyalphaind],'.')
     plt.xlabel('wavelength (Angstroms)')
     plt.ylabel('Flux')
 
 plt.legend()
-
-
-#plotting last processed spectra showing continuum removal
-plt.figure()
-plt.plot(wlen[0:wlim],flux[0:wlim])
-#plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
-plt.plot(xnew[0:wlim],ynew[0:wlim],'--')
-plt.xlabel('wavelength (Angstroms)')
-plt.ylabel('Flux')
 plt.show()
