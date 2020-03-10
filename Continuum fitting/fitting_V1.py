@@ -10,7 +10,7 @@ spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
 #specind=1
-specsample = np.array([1000])
+specsample = np.array([0])
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
@@ -35,7 +35,7 @@ for specind in specsample:
 
 
     #cont fitting
-    intervals = 10
+    intervals = 49
     window = int(speclen/intervals)
     windowwlen = wlen[window]-wlen[0]
     step = 0
@@ -82,7 +82,7 @@ plt.legend()
 #plotting last processed spectra showing continuum removal
 plt.figure()
 plt.plot(wlen[0:wlim],flux[0:wlim])
-#plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
+plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
 plt.plot(xnew[0:wlim],ynew[0:wlim],'--')
 plt.xlabel('wavelength (Angstroms)')
 plt.ylabel('Flux')
