@@ -10,7 +10,7 @@ spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
 #specind=1
-specsample = np.array([0])
+specsample = np.array([1000])
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
@@ -82,6 +82,7 @@ plt.legend()
 #plotting last processed spectra showing continuum removal
 plt.figure()
 plt.plot(wlen[0:wlim],flux[0:wlim])
+plt.plot(wlen[0:wlim],ivar[0:wlim])
 plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*')
 plt.plot(xnew[0:wlim],ynew[0:wlim],'--')
 plt.xlabel('wavelength (Angstroms)')
