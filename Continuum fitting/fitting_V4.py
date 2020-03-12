@@ -52,36 +52,36 @@ for specind in specsample:
 
 #fitting:
     #split the spec in two about lyalpha peak
+
+    lyalphawidth = 200 # set range around peak for no intervals
+
     forestflux = flux[0:lyalphaind]
     otherflux = flux[lyalphaind:speclen]
     forestwlen = wlen[0:lyalphaind]
     otherwlen = wlen[lyalphaind:speclen]
-    selecflux = np.array([forestflux,otherflux])
-    selecwlen = np.array([forestwlen,otherwlen])
-
-    lyalphawidth = 200 # set range around peak for no intervals
 
     forestlen = len(forestflux)
     otherlen = len(otherflux)
     selectlen = np.array([forestlen,otherlen])
 
 
-    intervalforest, intervalother = 40, 12
+    intervalforest, intervalother = 20, 18
     intervals = intervalforest + intervalother
 
     intervalwlen = np.zeros(intervalforest+intervalother+2)
     winpeak = np.zeros(intervalforest+intervalother+2)
 
     #loop increments
-    window =  int(speclen/intervals)
-    step = window
+    windowforest =  int(forestlen/intervalforest)
+    windowother =  int(otherlen/intervalother)
+    step = windowforest
     i = 0
 
     while step <= speclen:
         if step <= forestlen:
-            window =  int(forestlen/intervalforest)
+            window = windowforest
         else:
-            window =  int(otherlen/intervalother)
+            window =  windowother
 
         windata = flux[step:(step+window)]
         winpeakmed = step + findmed(windata)
@@ -109,7 +109,9 @@ for specind in specsample:
     intervalwlen = intervalwlen[intervalwlen != 0]
 
 #pad interval with start/end value to allign correctly
-    winpeak[0],winpeak[-1] = flux[0],flux[-1]
+    #winpeakmed = step + findmed(windata)
+    startind = findmax(flux[0:windowforest])
+    winpeak[0],winpeak[-1] = flux[startind],flux[winpeakind]
     intervalwlen[0],intervalwlen[-1] = wlen[0],wlen[-1]
 
     intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
