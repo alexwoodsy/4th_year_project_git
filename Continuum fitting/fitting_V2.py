@@ -46,11 +46,6 @@ for specind in specsample:
 #fitting: does fit to max of ly alpha and then median for rest of spec
     intervals = 60
 
-    forestflux = flux[0:lyalphaind]
-    otherflux = flux[lyalphaind:speclen]
-    forestwlen = wlen[0:lyalphaind]
-    otherwlen = wlen[lyalphaind:speclen]
-
     window = int(speclen/intervals)
 
     windowwlen = wlen[window]-wlen[0]

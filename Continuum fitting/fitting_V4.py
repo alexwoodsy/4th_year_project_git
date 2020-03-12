@@ -5,11 +5,23 @@ from astropy.io import fits
 from scipy import interpolate
 import os
 
-specnames = next(os.walk('Spectra'))[2] #dir is your directory path as string
+#calculates avgs for inputted array
+def findmax(array):
+    array = np.asarray(array)
+    ind = (np.abs(array - np.max(array))).argmin()
+    return ind
+
+def findmed(array):
+    array = np.asarray(array)
+    ind = (np.abs(array - np.median(array))).argmin()
+    return ind
+
+#imports the spectra from the spectra folder
+specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
-#add indexing for epctra in file to allow loop over all
-#specind=1
-specsample = np.array([0])
+#add indexing for spectra in file to allow loop over all
+
+specsample = np.array([0])#indexs of quasars to look at (for later use but added here)
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
@@ -39,26 +51,38 @@ for specind in specsample:
     lyalphaind = (np.abs(wlen - lyalphacalc)).argmin()#finds index of nearest point in data
 
 #fitting:
-    intervals = 15
-    window = int(speclen/intervals)
-    windowwlen = wlen[window]-wlen[0]
+    #split the spec in two about lyalpha peak
+    forestflux = flux[0:lyalphaind]
+    otherflux = flux[lyalphaind:speclen]
+    forestwlen = wlen[0:lyalphaind]
+    otherwlen = wlen[lyalphaind:speclen]
+    selecflux = np.array([forestflux,otherflux])
+    selecwlen = np.array([forestwlen,otherwlen])
 
-    step = 0
+    lyalphawidth = 200 # set range around peak for no intervals
+
+    forestlen = len(forestflux)
+    otherlen = len(otherflux)
+    selectlen = np.array([forestlen,otherlen])
+
+
+    intervalforest, intervalother = 40, 12
+    intervals = intervalforest + intervalother
+
+    intervalwlen = np.zeros(intervalforest+intervalother+2)
+    winpeak = np.zeros(intervalforest+intervalother+2)
+
+    #loop increments
+    window =  int(speclen/intervals)
+    step = window
     i = 0
-    intervalwlen = np.zeros(intervals+2)
-    winpeak = np.zeros(intervals+2)
 
-    def findmax(array):
-        array = np.asarray(array)
-        ind = (np.abs(array - np.max(array))).argmin()
-        return ind
+    while step <= speclen:
+        if step <= forestlen:
+            window =  int(forestlen/intervalforest)
+        else:
+            window =  int(otherlen/intervalother)
 
-    def findmed(array):
-        array = np.asarray(array)
-        ind = (np.abs(array - np.median(array))).argmin()
-        return ind
-
-    while (step+window) <= speclen:
         windata = flux[step:(step+window)]
         winpeakmed = step + findmed(windata)
         winpeakmax = step + findmax(windata)
@@ -72,7 +96,7 @@ for specind in specsample:
         winpeak[i+1] = flux[winpeakind]
 
 #stops slection of interval near lyalpha peak
-        if np.abs(wlen[winpeakind] - wlen[lyalphaind]) > window:
+        if np.abs(wlen[winpeakind] - wlen[lyalphaind]) > lyalphawidth:
             intervalwlen[i+1] = wlen[winpeakind]
         else:
             intervalwlen[i+1] = winpeak[i+1] = 0
@@ -83,6 +107,7 @@ for specind in specsample:
 #remove zero values made by filtering procedure
     winpeak = winpeak[winpeak != 0]
     intervalwlen = intervalwlen[intervalwlen != 0]
+
 #pad interval with start/end value to allign correctly
     winpeak[0],winpeak[-1] = flux[0],flux[-1]
     intervalwlen[0],intervalwlen[-1] = wlen[0],wlen[-1]
