@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams['text.usetex'] = True
 from astropy.modeling import models, fitting
 from astropy.io import fits
 from scipy import interpolate
@@ -21,7 +22,7 @@ specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 
-specsample = np.array([0])#indexs of quasars to look at (for later use but added here)
+specsample = np.array([0,1000,1700])#indexs of quasars to look at (for later use but added here)
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
@@ -121,17 +122,22 @@ for specind in specsample:
 
 #plotting:
     wlim = speclen
+    plt.figure(1)
+    plt.title('continuum fitting')
     plt.plot(wlen[0:wlim],flux[0:wlim],label=specnames[specind])
     plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*',label='intervals')
     plt.plot(wlen[0:wlim],contfit[0:wlim],'--',label='interpolation')
     plt.plot(wlen[lyalphaind],flux[lyalphaind],'.',label='lyalpha')
-    plt.xlabel('wavelength (Angstroms)')
+    plt.xlabel(r'$\lambda$ (Angstroms)',fontsize=16)
     plt.ylabel('Flux')
-plt.legend()
+    if specind == specsample[0]:
+        plt.legend()
 
-plt.figure()
-plt.plot(wlen[0:wlim],normspec[0:wlim],label='contrem')
-plt.xlabel('wavelength (Angstroms)')
-plt.ylabel('Flux')
-plt.legend()
+    plt.figure(2)
+    plt.title('continuum removed')
+    plt.plot(wlen[0:wlim],normspec[0:wlim],label=specnames[specind])
+    plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)',fontsize=16)
+    plt.ylabel('Flux')
+    plt.legend()
+
 plt.show()
