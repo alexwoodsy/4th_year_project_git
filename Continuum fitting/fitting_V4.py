@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-plt.rcParams['text.usetex'] = True
 from astropy.modeling import models, fitting
 from astropy.io import fits
 from scipy import interpolate
 import os
+
+plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
 #calculates avgs for inputted array
 def findmax(array):
@@ -22,7 +23,7 @@ specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 
-specsample = np.array([0,1000,1700])#indexs of quasars to look at (for later use but added here)
+specsample = np.array([0])#indexs of quasars to look at (for later use but added here)
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
@@ -54,8 +55,6 @@ for specind in specsample:
 #fitting:
     #split the spec in two about lyalpha peak
 
-    lyalphawidth = 200 # set range around peak for no intervals
-
     forestflux = flux[0:lyalphaind]
     otherflux = flux[lyalphaind:speclen]
     forestwlen = wlen[0:lyalphaind]
@@ -66,7 +65,8 @@ for specind in specsample:
     selectlen = np.array([forestlen,otherlen])
 
 
-    intervalforest, intervalother = 20, 18
+    intervalforest, intervalother = 30, 18
+    lyalphawidth = 80 # set range around peak for no intervals
     intervals = intervalforest + intervalother
 
     intervalwlen = np.zeros(intervalforest+intervalother+2)
@@ -123,21 +123,21 @@ for specind in specsample:
 #plotting:
     wlim = speclen
     plt.figure(1)
-    plt.title('continuum fitting')
+    #plt.title('continuum fitting')
     plt.plot(wlen[0:wlim],flux[0:wlim],label=specnames[specind])
     plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*',label='intervals')
     plt.plot(wlen[0:wlim],contfit[0:wlim],'--',label='interpolation')
-    plt.plot(wlen[lyalphaind],flux[lyalphaind],'.',label='lyalpha')
-    plt.xlabel(r'$\lambda$ (Angstroms)',fontsize=16)
-    plt.ylabel('Flux')
+    plt.plot(wlen[lyalphaind],flux[lyalphaind],'.',label=r'Ly$\alpha$')
+    plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+    plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
     if specind == specsample[0]:
         plt.legend()
 
     plt.figure(2)
-    plt.title('continuum removed')
+    #plt.title('continuum removed')
     plt.plot(wlen[0:wlim],normspec[0:wlim],label=specnames[specind])
-    plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)',fontsize=16)
-    plt.ylabel('Flux')
+    plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+    plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
     plt.legend()
 
 plt.show()
