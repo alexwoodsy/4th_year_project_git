@@ -30,7 +30,7 @@ specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 
-specsample = np.array([0])#indexs of quasars to look at (for later use but added here)
+specsample = np.array([1000])#indexs of quasars to look at (for later use but added here)
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
@@ -88,8 +88,6 @@ for specind in specsample:
         intervalwlen = np.append(intervalwlen,wlen[winpeakind])
         step = step + window
 
-    last = np.max(winpeakind)
-    print(wlen[last])
 
 #pad interval with start/end value to allign correctly
     #winpeakmed = step + findmed(windata)
