@@ -57,7 +57,7 @@ def contfitv4(specind):
 
 
     lyalphacalc = 1215.67*(1+redshift)#calc lya using redshift
-    print('lyalpha = ',lyalphacalc)
+    #print('lyalpha = ',lyalphacalc)
     lyalphaind = (np.abs(wlen - lyalphacalc)).argmin()#finds index of nearest point in data
 
 #fitting:
@@ -129,7 +129,7 @@ def contfitv4(specind):
     contfit = intpol(wlen)
     normspec = flux-contfit
 
-    return wlen, normspec
+    return wlen, normspec, lyalphacalc
 
 def contfitv5(specind):
     specdirectory = 'Spectra/'+specnames[specind]
@@ -214,7 +214,7 @@ def contfitv5(specind):
 
 
     normspec = flux-contfit
-    return wlen, normspec
+    return wlen, normspec, lyalphacalc
 
 
 def contfitv6(specind):
@@ -282,4 +282,4 @@ def contfitv6(specind):
     contfit[0:forestlen] = interpolfit
 
     normspec = flux-contfit
-    return wlen, normspec
+    return wlen, normspec, lyalphacalc
