@@ -1,3 +1,4 @@
+#use model for spectrum not in forest
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
@@ -32,10 +33,12 @@ for specind in specsample:
     speclen = len(data)
     flux = np.zeros(speclen)
     wlen = np.zeros(speclen)
+    model = np.zeros(speclen)
 
     for i in range(0,speclen):
      flux[i] = data[i][0]
      wlen[i] = 10**(data[i][1])
+     model[i] = data[i][7]
 
 
 #meta data extraction to get z:
@@ -65,45 +68,27 @@ for specind in specsample:
     selectlen = np.array([forestlen,otherlen])
 
 
-    intervalforest, intervalother = 20, 70
-    lyalphawidth = 100 # set range around peak for no intervals
-    intervals = intervalforest + intervalother
+    intervalforest = 20
+    # set range around peak for no intervals
+    lyalphalimind = 25
+    forestlen = forestlen-lyalphalimind
 
-    intervalwlen = np.zeros(intervalforest+intervalother+2)
-    winpeak = np.zeros(intervalforest+intervalother+2)
+
+    intervalwlen = np.zeros(intervalforest+1)
+    winpeak = np.zeros(intervalforest+1)
 
     #loop increments
-    windowforest =  int(forestlen/intervalforest)
-    windowother =  int(otherlen/intervalother)
-    step = windowforest
+    window =  int(forestlen/intervalforest)
+    step = window
     i = 0
 
-    while step <= speclen:
-        if step <= forestlen:
-            window = windowforest
-        else:
-            window =  windowother
-
+    while step <= forestlen:
         windata = flux[step:(step+window)]
-        winpeakmed = step + findmed(windata)
         winpeakmax = step + findmax(windata)
-        if wlen[winpeakmax] < wlen[lyalphaind]:
-            winpeakind = winpeakmax
-        elif wlen[winpeakmax] > wlen[lyalphaind] and wlen[winpeakmed] < wlen[lyalphaind]:
-            winpeakind = winpeakmax
-        else:
-            winpeakind = winpeakmed
-
+        winpeakind = winpeakmax
         winpeak[i+1] = flux[winpeakind]
-
 #stops slection of interval near lyalpha peak
-        if np.abs(wlen[winpeakind] - wlen[lyalphaind]) > lyalphawidth:
-            intervalwlen[i+1] = wlen[winpeakind]
-        #elif wlen[winpeakmax] < wlen[lyalphaind] and np.abs(wlen[winpeakind] - wlen[lyalphaind]) < lyalphawidth:
-        #    intervalwlen[i+1] = wlen[winpeakind]
-        else:
-            intervalwlen[i+1] = winpeak[i+1] = 0
-
+        intervalwlen[i+1] = wlen[winpeakind]
         step = step + window
         i = i + 1
 
@@ -113,12 +98,16 @@ for specind in specsample:
 
 #pad interval with start/end value to allign correctly
     #winpeakmed = step + findmed(windata)
-    startind = findmax(flux[0:windowforest])
-    winpeak[0],winpeak[-1] = flux[startind],flux[winpeakind]
-    intervalwlen[0],intervalwlen[-1] = wlen[0],wlen[-1]
+    startind = findmax(flux[0:window])
+    winpeak[0] = flux[startind]
+    intervalwlen[0] = wlen[0]
 
     intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
-    contfit = intpol(wlen)
+    interpolfit = intpol(forestwlen[0:forestlen])
+    contfit = model
+    contfit[0:forestlen] = interpolfit
+
+
     normspec = flux-contfit
 
 

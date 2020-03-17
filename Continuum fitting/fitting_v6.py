@@ -1,3 +1,4 @@
+#top x% method for fitting continuum in the forest
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
@@ -7,7 +8,7 @@ import os
 
 plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
-#calculates avgs for inputted array
+#calculates points slected in interval
 def findmax(array):
     array = np.asarray(array)
     ind = (np.abs(array - np.max(array))).argmin()
@@ -17,6 +18,12 @@ def findmed(array):
     array = np.asarray(array)
     ind = (np.abs(array - np.median(array))).argmin()
     return ind
+
+def findpct(array,pct):
+    sortedarray = np.argsort(array)
+    selectedvals = sortedarray[-pct:]
+    return selectedvals
+
 
 #imports the spectra from the spectra folder
 specnames = next(os.walk('Spectra'))[2]
@@ -32,10 +39,12 @@ for specind in specsample:
     speclen = len(data)
     flux = np.zeros(speclen)
     wlen = np.zeros(speclen)
+    model = np.zeros(speclen)
 
     for i in range(0,speclen):
      flux[i] = data[i][0]
      wlen[i] = 10**(data[i][1])
+     model[i] = data[i][7]
 
 
 #meta data extraction to get z:
@@ -64,61 +73,37 @@ for specind in specsample:
     otherlen = len(otherflux)
     selectlen = np.array([forestlen,otherlen])
 
-
-    intervalforest, intervalother = 20, 70
-    lyalphawidth = 100 # set range around peak for no intervals
-    intervals = intervalforest + intervalother
-
-    intervalwlen = np.zeros(intervalforest+intervalother+2)
-    winpeak = np.zeros(intervalforest+intervalother+2)
-
+    intervalwlen = np.array([0])
+    winpeak = np.array([0])
+    pct = 15
     #loop increments
-    windowforest =  int(forestlen/intervalforest)
-    windowother =  int(otherlen/intervalother)
-    step = windowforest
-    i = 0
+    winnum = 10
+    window = int(forestlen/winnum)
+    step = 0
 
-    while step <= speclen:
-        if step <= forestlen:
-            window = windowforest
-        else:
-            window =  windowother
-
+    while step <= forestlen+winnum:
         windata = flux[step:(step+window)]
-        winpeakmed = step + findmed(windata)
-        winpeakmax = step + findmax(windata)
-        if wlen[winpeakmax] < wlen[lyalphaind]:
-            winpeakind = winpeakmax
-        elif wlen[winpeakmax] > wlen[lyalphaind] and wlen[winpeakmed] < wlen[lyalphaind]:
-            winpeakind = winpeakmax
-        else:
-            winpeakind = winpeakmed
-
-        winpeak[i+1] = flux[winpeakind]
-
-#stops slection of interval near lyalpha peak
-        if np.abs(wlen[winpeakind] - wlen[lyalphaind]) > lyalphawidth:
-            intervalwlen[i+1] = wlen[winpeakind]
-        #elif wlen[winpeakmax] < wlen[lyalphaind] and np.abs(wlen[winpeakind] - wlen[lyalphaind]) < lyalphawidth:
-        #    intervalwlen[i+1] = wlen[winpeakind]
-        else:
-            intervalwlen[i+1] = winpeak[i+1] = 0
-
+        winpeakind = step + findpct(windata,pct)
+        winpeak = np.append(winpeak,flux[winpeakind])
+        intervalwlen = np.append(intervalwlen,wlen[winpeakind])
         step = step + window
-        i = i + 1
 
-#remove zero values made by filtering procedure
-    winpeak = winpeak[winpeak != 0]
-    intervalwlen = intervalwlen[intervalwlen != 0]
+    last = np.max(winpeakind)
+    print(wlen[last])
 
 #pad interval with start/end value to allign correctly
     #winpeakmed = step + findmed(windata)
-    startind = findmax(flux[0:windowforest])
-    winpeak[0],winpeak[-1] = flux[startind],flux[winpeakind]
-    intervalwlen[0],intervalwlen[-1] = wlen[0],wlen[-1]
+    startind = findmax(flux[0:window])
+    winpeak[0] = flux[startind]
+    intervalwlen[0] = wlen[0]
+
 
     intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
-    contfit = intpol(wlen)
+    interpolfit = intpol(forestwlen)
+    contfit = model
+    contfit[0:forestlen] = interpolfit
+
+
     normspec = flux-contfit
 
 

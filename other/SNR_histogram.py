@@ -5,20 +5,17 @@ from astropy.io import fits
 from scipy import interpolate
 import os
 
-plt.style.use('mystylehistogram')
-
 specnames = next(os.walk('Spectra'))[2] #dir is your directory path as string
 spectot = len(specnames)
 
 #add indexing for epctra in file to allow loop over all
 #specind=1
-specsample = np.arange(0,spectot-1)
-print(specsample)
+specsample = np.array([spectot-1])
 # print(specsample)
 totivar = []
 totflux = []
 
-for specind in specsample:
+for specind in range(0,100):
     specdirectory = 'Spectra/'+specnames[specind]
     # print(specdirectory)
     data = fits.getdata(specdirectory,ext=1)#import fits image
@@ -49,15 +46,13 @@ ston = np.asarray(totflux)/std
 # print(ston)
 # print(len(ivar))
 logsn = np.log(ston)
-step = 0.5
-binning = np.arange(int(min(logsn)-step)-0.5, int(max(logsn)+step) + 1, step)
-n, bins, patches = plt.hist(x = logsn, bins = binning, alpha=1, rwidth=1)
-# print(n)
-#plt.grid(axis='y', alpha=0.4)
-plt.xlabel(r'$S/N_{Ly\alpha}$')
-plt.xticks(binning)
+binning = np.arange(min(logsn), max(logsn) + 1, 1)
 
-plt.ylabel('N')
-#plt.title('SNR Histogram')
+n, bins, patches = plt.hist(x = logsn, bins = binning,color='green', alpha=0.7, rwidth=0.9)
+# print(n)
+plt.grid(axis='y', alpha=0.4)
+plt.xlabel('SNR')
+plt.ylabel('Frequency')
+plt.title('SNR Histogram')
 
 plt.show()
