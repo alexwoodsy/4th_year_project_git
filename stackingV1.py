@@ -29,9 +29,11 @@ clusterredshift = np.zeros(poslen)
 plate = np.zeros(poslen)
 mjd = np.zeros(poslen).astype(str)
 fiberid = np.zeros(poslen)
+clusternames = np.zeros(poslen).astype(str)
 
 for j in range(0,poslen):
     clusterredshift[j] = positions[j][109]
+    clusternames[j] = str(positions[j][105])
     plate[j] = positions[j][4]
     mjd[j] = str(positions[j][5])
     # print(mjd[j])
@@ -39,11 +41,11 @@ for j in range(0,poslen):
     fiberid[j] = positions[j][6]
 
 # mjdstr = " ".join(str(e) for e in mjd)
-# print(len(mjd))
+# print(clusternames)
 mjd = np.array2string(mjd)
 # print(type(mjd))
 
-specsample = np.array([0,1000]) #indexs of quasars to look at (for later use but added here)
+specsample = np.array([0,2,3,4,5]) #indexs of quasars to look at (for later use but added here)
 
 normspecnew = []
 
@@ -77,11 +79,13 @@ for specind in specsample:
     # print(len(mjdstr))
     # print(index)
     clusterz = clusterredshift[index]
-    print(clusterz)
+    # print(clusterz)
+    name = clusternames[index]
+    # print(name)
 
     lyalphacalc = 1215.67*(1+redshift) #calc lya using redshift
     # lyalphacalc = np.max(flux)
-    print('lyalpha of quasar = ',lyalphacalc)
+    # print('lyalpha of quasar = ',lyalphacalc)
     lyalphaind = (np.abs(wlen - lyalphacalc)).argmin() #finds index of nearest point in data
 
     lyalphacluster = 1215.67*(1+clusterz)
@@ -153,6 +157,7 @@ for specind in specsample:
     contfit = intpol(shiftedwlen)
     normspec = flux-contfit
 
+    # print(len(normspec))
     normspecnew.append(normspec)
     # normspecnew = normspecnew + normspec
 #plotting:
@@ -169,7 +174,7 @@ for specind in specsample:
     plt.plot(wlen[0:wlim],normspec[0:wlim],label=specnames[specind])
     plt.xlabel('wavelength (Angstroms)')
     plt.ylabel('Flux')
-    plt.legend()
+    # plt.legend()
 
 # stacked = np.sum(normspecnew)
 # x = zip(normspecnew)
@@ -181,4 +186,5 @@ for specind in specsample:
 # plt.xlabel('wavelength (Angstroms)')
 # plt.ylabel('Flux')
 # plt.legend()
-plt.show()
+
+# plt.show()
