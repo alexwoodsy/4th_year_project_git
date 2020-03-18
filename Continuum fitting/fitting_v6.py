@@ -6,7 +6,7 @@ from astropy.io import fits
 from scipy import interpolate
 import os
 
-plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
+#plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
 #calculates points slected in interval
 def findmax(array):
@@ -91,7 +91,7 @@ for specind in specsample:
 
 #pad interval with start/end value to allign correctly
     #winpeakmed = step + findmed(windata)
-    startind = findmax(flux[0:window])
+    startind = findmed(flux[0:window])
     winpeak[0] = flux[startind]
     intervalwlen[0] = wlen[0]
 
