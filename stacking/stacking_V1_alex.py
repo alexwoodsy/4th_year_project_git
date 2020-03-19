@@ -3,11 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
-from scipy import interpolate
+from scipy import interpolate, signal
 import os
 #import fitting
 import sys
 sys.path.append('C:/Users/alexw/Documents/GitHub/4th_year_project_git/Continuum fitting')
+#path for other pc sys.path.append('C:/Users/alexw/OneDrive/Documents/University work/4th year work/Main project/4th_year_project_git/Continuum fitting')
 import fittingmethods as fitmeth
 
 #plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
@@ -16,35 +17,7 @@ import fittingmethods as fitmeth
 specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 
-specsample = np.array([0,2,1000])
-
-
-#test data
-x1 = np.arange(1,7,0.02)
-y1 = np.sin(x1)
-plt.plot(x1,y1)
-x2 = np.arange(1,9,0.05)
-y2 = np.sin(x2)
-plt.plot(x2,y2)
-
-shift = 0 - np.max(y1)
-xshift = x1 + shift
-xhighres = np.linspace(np.min(xshift), np.max(xshift), 1000)
-xintpol = interpolate.interp1d(xshift, y1, 'linear')
-y1highres = xintpol(xhighres)
-
-shift = 0 - np.max(y2)
-xshift = x2 + shift
-xhighres = np.linspace(np.min(xshift), np.max(xshift), 1000)
-xintpol = interpolate.interp1d(xshift, y2, 'linear')
-y2highres = xintpol(xhighres)
-
-yout = y1highres-y2highres
-plt.plot(xhighres,yout)
-plt.show()
-
-
-
+specsample = np.array([0,1000])
 
 gcredhsift = 2
 gclyalpha = 1215.67*(1+gcredhsift)
@@ -58,6 +31,16 @@ for specind in specsample:
     wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
     normspechighres = wlenintpol(wlenhighres)
     normspeckstack = normspeckstack + normspechighres
+
+
+#downsample stacked specind
+dsrange = np.linspace(normspeckstack[0], normspeckstack[-1],5000)
+dsnormspewcstack = signal.resample(normspeckstack, 5000)
+dsrange = np.linspace(normspeckstack[0], normspeckstack[-1],5000)
+
+#plt.figure()
+#plt.plot(wlenhighres, normspeckstack,'.')
+
 plt.figure()
-plt.plot(wlenhighres, normspeckstack)
+plt.plot(dsrange, dsnormspewcstack)
 plt.show()

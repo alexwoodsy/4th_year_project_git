@@ -23,7 +23,7 @@ specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 
-specsample = np.array([5])#indexs of quasars to look at (for later use but added here)
+specsample = np.array([0])#indexs of quasars to look at (for later use but added here)
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
@@ -37,8 +37,7 @@ for specind in specsample:
      flux[i] = data[i][0]
      wlen[i] = 10**(data[i][1])
 
-    plt.plot(wlen,flux)
-    plt.show()
+
 #meta data extraction to get z:
     fitdata = fits.getdata(specdirectory,ext=2)#import fits image
     metasize = len(fitdata[0])
@@ -66,7 +65,7 @@ for specind in specsample:
     selectlen = np.array([forestlen,otherlen])
 
 
-    intervalforest, intervalother = 20, 70
+    intervalforest, intervalother = 20, 80
     lyalphawidth = 100 # set range around peak for no intervals
     intervals = intervalforest + intervalother
 
