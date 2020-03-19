@@ -16,14 +16,16 @@ import fittingmethods as fitmeth
 specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 
-specsample = np.array([0,2,1000])
+specsample = np.array([0,1000])
 
 positions = fits.getdata('PositionsTable.fits',ext=1)
 poslen = len(positions)
+# print(poslen)
+# print(positions)
 clusterredshift = np.zeros(poslen)
-plate = np.zeros(poslen)
+plate = np.zeros(poslen).astype(str)
 mjd = np.zeros(poslen).astype(str)
-fiberid = np.zeros(poslen)
+fiberid = np.zeros(poslen).astype(str)
 clusternames = np.zeros(poslen).astype(str)
 seperation = np.zeros(poslen)
 
@@ -33,11 +35,15 @@ for j in range(0,poslen):
     seperation[j] = positions[j][114]
     plate[j] = positions[j][4]
     mjd[j] = str(positions[j][5])
-    fiberid[j] = positions[j][6]
+    fiberid[j] = str(positions[j][6])
 
 # mjdstr = " ".join(str(e) for e in mjd)
-# print(clusternames)
-mjd = np.array2string(mjd)
+# print(len(clusternames))
+# plate = (plate)
+print(len(plate))
+# mjd = np.array2string(mjd)
+print(len(mjd))
+# fiberid = np.array2string(fiberid)
 
 normspeckstack = np.zeros(100000)
 
@@ -49,14 +55,31 @@ for specind in specsample:
     #print(metasize)
     if metasize == 126:
          redshift = fitdata[0][63]
+         platespec = fitdata[0][54]
          mjdspec = fitdata[0][56]
+         fiberidspec = fitdata[0][57]
     else:
          redshift = fitdata[0][38]
+         # platespec = fitdata[0][]
          mjdspec = fitdata[0][29]
+         # fiberidspec = fitdata[0][]
 
+    platespec = str(platespec)
     mjdspec = str(mjdspec)
-    index = mjd.find(mjdspec)
-    gcredshift = clusterredshift[index]
+    fiberidspec = str(fiberidspec)
+    print(platespec)
+    print(mjdspec)
+    print(fiberid)
+    index1 = plate.find(platespec)
+    index2 = mjd.find(mjdspec)
+    index3 = fiberid.find(fiberidspec)
+    print(index1)
+    print(index2)
+    print(index3)
+
+    i for i, x in enumerate(plate) if x==platespec
+
+    gcredshift = clusterredshift[index2]
     gclyalpha = 1215.67*(1+gcredshift)
 
     wlen, normspec, lyalpha = fitmeth.contfitv6(specind)
@@ -68,6 +91,7 @@ for specind in specsample:
     normspechighres = wlenintpol(wlenhighres)
     normspeckstack = normspeckstack + normspechighres
 
+    print(wlenhighres)
 
 #downsample stacked specind
 dsrange = np.linspace(normspeckstack[0], normspeckstack[-1],5000)
@@ -79,4 +103,4 @@ dsrange = np.linspace(normspeckstack[0], normspeckstack[-1],5000)
 
 plt.figure()
 plt.plot(dsrange, dsnormspewcstack)
-plt.show()
+# plt.show()

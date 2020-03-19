@@ -45,6 +45,7 @@ for j in range(0,poslen):
 # mjdstr = " ".join(str(e) for e in mjd)
 # print(clusternames)
 mjd = np.array2string(mjd)
+print(len(mjd))
 # print(type(mjd))
 
 specsample = np.array([0,2,3,4,5]) #indexs of quasars to look at (for later use but added here)
