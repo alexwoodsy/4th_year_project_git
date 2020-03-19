@@ -6,7 +6,7 @@ from astropy.io import fits
 from scipy import interpolate
 import os
 
-plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
+#plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
 #calculates avgs for inputted array
 def findmax(array):
@@ -24,7 +24,7 @@ specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 
-specsample = np.array([1000])#indexs of quasars to look at (for later use but added here)
+specsample = np.array([0])#indexs of quasars to look at (for later use but added here)
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
