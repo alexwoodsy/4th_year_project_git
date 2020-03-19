@@ -6,7 +6,7 @@ from astropy.io import fits
 from scipy import interpolate
 import os
 
-plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
+#plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
 #calculates avgs for inputted array
 def findmax(array):
