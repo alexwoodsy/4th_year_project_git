@@ -16,7 +16,7 @@ import fittingmethods as fitmeth
 specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 
-specsample = np.array([0,1000])
+specsample = np.array([0,2,4])
 
 positions = fits.getdata('PositionsTable.fits',ext=1)
 poslen = len(positions)
@@ -40,67 +40,75 @@ for j in range(0,poslen):
 # mjdstr = " ".join(str(e) for e in mjd)
 # print(len(clusternames))
 # plate = (plate)
-print(len(plate))
+# print(len(plate))
 # mjd = np.array2string(mjd)
-print(len(mjd))
+# print(len(mjd))
 # fiberid = np.array2string(fiberid)
 
 normspeckstack = np.zeros(100000)
+wlenmin = []
+wlenmax = []
 
 for specind in specsample:
     specdirectory = 'Spectra/'+specnames[specind]
-    fitdata = fits.getdata(specdirectory,ext=2)#import fits image
-    # print(fitdata)
-    metasize = len(fitdata[0])
-    #print(metasize)
-    if metasize == 126:
-         redshift = fitdata[0][63]
-         platespec = fitdata[0][54]
-         mjdspec = fitdata[0][56]
-         fiberidspec = fitdata[0][57]
-    else:
-         redshift = fitdata[0][38]
-         # platespec = fitdata[0][]
-         mjdspec = fitdata[0][29]
-         # fiberidspec = fitdata[0][]
 
-    platespec = str(platespec)
-    mjdspec = str(mjdspec)
-    fiberidspec = str(fiberidspec)
-    print(platespec)
-    print(mjdspec)
-    print(fiberid)
-    index1 = plate.find(platespec)
-    index2 = mjd.find(mjdspec)
-    index3 = fiberid.find(fiberidspec)
-    print(index1)
-    print(index2)
-    print(index3)
+    stondata = fits.getdata(specdirectory,ext=1)
+    medflux = np.median(stondata[0])
+    medivar = np.median(stondata[2])
+    std = (np.asarray(medivar))**-0.5
+    ston = np.asarray(medflux)/std
 
-    i for i, x in enumerate(plate) if x==platespec
+    if ston > 0.1:
 
-    gcredshift = clusterredshift[index2]
-    gclyalpha = 1215.67*(1+gcredshift)
+        fitdata = fits.getdata(specdirectory,ext=2)#import fits image
+        # print(fitdata)
+        metasize = len(fitdata[0])
+        #print(metasize)
+        if metasize == 126:
+             redshift = fitdata[0][63]
+             platespec = fitdata[0][54]
+             mjdspec = fitdata[0][56]
+             fiberidspec = fitdata[0][57]
+        else:
+             redshift = fitdata[0][38]
+             # platespec = fitdata[0][]
+             mjdspec = fitdata[0][29]
+             # fiberidspec = fitdata[0][]
 
-    wlen, normspec, lyalpha = fitmeth.contfitv6(specind)
-    rfshift = gclyalpha - lyalpha
-    wlenshift = wlen + rfshift
-    # wlenshift = wlen - gclyalpha
-    wlenhighres = np.linspace(np.min(wlenshift), np.max(wlenshift), 100000)
-    wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
-    normspechighres = wlenintpol(wlenhighres)
-    normspeckstack = normspeckstack + normspechighres
 
-    print(wlenhighres)
+        # i for i, x in enumerate(plate) if x==platespec
+
+        # gcredshift = clusterredshift[index2]
+        gcredshift = 0
+        print(gcredshift)
+        gclyalpha = 1215.67*(1+gcredshift)
+
+        wlen, normspec, lyalpha = fitmeth.contfitv6(specind)
+        # rfshift = gclyalpha - lyalpha
+        # wlenshift = wlen + rfshift
+        # wlenshift = wlen - gclyalpha
+        wlenshift = wlen/(1+gcredshift)
+        wlenmin.append(np.min(wlenshift))
+        wlenmax.append(np.max(wlenshift))
+
+        wlenhighres = np.linspace(np.max(wlenmin), np.min(wlenmax), 100000)
+        wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
+        normspechighres = wlenintpol(wlenhighres)
+        normspeckstack = normspeckstack + normspechighres
+
+        # plt.plot(wlenshift,normspec)
+        # plt.plot(wlenhighres,normspechighres)
+
+        # print(wlenhighres)
 
 #downsample stacked specind
 dsrange = np.linspace(normspeckstack[0], normspeckstack[-1],5000)
 dsnormspewcstack = signal.resample(normspeckstack, 5000)
-dsrange = np.linspace(normspeckstack[0], normspeckstack[-1],5000)
+# dsrange = np.linspace(normspeckstack[0], normspeckstack[-1],5000)
 
 #plt.figure()
 #plt.plot(wlenhighres, normspeckstack,'.')
 
 plt.figure()
 plt.plot(dsrange, dsnormspewcstack)
-# plt.show()
+plt.show()

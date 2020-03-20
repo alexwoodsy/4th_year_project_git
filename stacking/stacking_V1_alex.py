@@ -34,9 +34,9 @@ for specind in specsample:
 
     wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
     normspechighres = wlenintpol(wlenhighres)
-    print(normspechighres)
+    # print(normspechighres)
     normspeckstack = normspeckstack + normspechighres
-    print(normspeckstack)
+    # print(normspeckstack)
     plt.figure()
     plt.plot(wlenshift,normspec)
     plt.plot(wlenhighres,normspechighres)
@@ -53,6 +53,6 @@ dsnormspewcstack = signal.resample(normspeckstack, 5000)
 #plt.figure()
 #plt.plot(wlenhighres, normspeckstack,'.')
 
-# plt.figure()
+plt.figure()
 plt.plot(wlenhighres, normspeckstack)
 plt.show()
