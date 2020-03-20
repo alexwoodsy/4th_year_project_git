@@ -283,3 +283,71 @@ def contfitv6(specind):
 
     normspec = flux-contfit
     return wlen, normspec, lyalphacalc
+
+
+def contfitv7(specfilename):
+    specdirectory = 'Spectra/'+specfilename
+    #print(specdirectory)
+    data = fits.getdata(specdirectory,ext=1)#import fits image
+    speclen = len(data)
+    flux = np.zeros(speclen)
+    wlen = np.zeros(speclen)
+    model = np.zeros(speclen)
+
+    for i in range(0,speclen):
+     flux[i] = data[i][0]
+     wlen[i] = 10**(data[i][1])
+     model[i] = data[i][7]
+
+#meta data extraction to get z:
+    fitdata = fits.getdata(specdirectory,ext=2)#import fits image
+    metasize = len(fitdata[0])
+    #print(metasize)
+    if metasize == 126:
+         redshift = fitdata[0][63]
+    else:
+         redshift = fitdata[0][38]
+
+
+    lyalphacalc = 1215.67*(1+redshift)#calc lya using redshift
+    #print('lyalpha = ',lyalphacalc)
+    lyalphaind = (np.abs(wlen - lyalphacalc)).argmin()#finds index of nearest point in data
+#fitting:
+    #split the spec in two about lyalpha peak
+    forestflux = flux[0:lyalphaind]
+    otherflux = flux[lyalphaind:speclen]
+    forestwlen = wlen[0:lyalphaind]
+    otherwlen = wlen[lyalphaind:speclen]
+
+    forestlen = len(forestflux)
+    otherlen = len(otherflux)
+    selectlen = np.array([forestlen,otherlen])
+
+    intervalwlen = np.array([0])
+    winpeak = np.array([0])
+    pct = 15
+    #loop increments
+    winnum = 10
+    window = int(forestlen/winnum)
+    step = 0
+
+    while step <= forestlen+winnum:
+        windata = flux[step:(step+window)]
+        winpeakind = step + findpct(windata,pct)
+        winpeak = np.append(winpeak,flux[winpeakind])
+        intervalwlen = np.append(intervalwlen,wlen[winpeakind])
+        step = step + window
+
+#pad interval with start/end value to allign correctly
+    #winpeakmed = step + findmed(windata)
+    startind = findmax(flux[0:window])
+    winpeak[0] = flux[startind]
+    intervalwlen[0] = wlen[0]
+
+    intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
+    interpolfit = intpol(forestwlen)
+    contfit = model
+    contfit[0:forestlen] = interpolfit
+
+    normspec = flux-contfit
+    return wlen, normspec, lyalphacalc
