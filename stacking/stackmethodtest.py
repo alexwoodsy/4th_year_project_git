@@ -1,10 +1,17 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.modeling import models, fitting
+from astropy.io import fits
+from scipy import interpolate
+import os
+
 #test data
 x1 = np.arange(1,7,0.02)
-y1 = np.sin(x1)
-plt.plot(x1,y1)
+y1 = np.sin(x1)+1
+plt.plot(x1,y1,'.')
 x2 = np.arange(1,9,0.05)
 y2 = np.sin(x2)
-plt.plot(x2,y2)
+plt.plot(x2,y2,'.')
 
 shift = 0 - np.max(y1)
 xshift = x1 + shift

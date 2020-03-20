@@ -13,7 +13,7 @@ spectot = len(specnames)
 #add indexing for epctra in file to allow loop over all
 #specind=1
 specsample = np.arange(0,spectot-1)
-print(specsample)
+# specsample = np.arange(0,200)
 # print(specsample)
 totivar = []
 totflux = []
@@ -54,7 +54,7 @@ binning = np.arange(int(min(logsn)-step)-0.5, int(max(logsn)+step) + 1, step)
 n, bins, patches = plt.hist(x = logsn, bins = binning, alpha=1, rwidth=1)
 # print(n)
 #plt.grid(axis='y', alpha=0.4)
-plt.xlabel(r'$S/N_{Ly\alpha}$')
+plt.xlabel(r'$log(S/N_{Ly\alpha})$')
 plt.xticks(binning)
 
 plt.ylabel('N')

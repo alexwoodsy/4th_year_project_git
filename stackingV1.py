@@ -6,6 +6,8 @@ from scipy import interpolate
 import os
 import math
 
+plt.style.use('mystyle')
+
 #calculates avgs for inputted array
 def findmax(array):
     array = np.asarray(array)
@@ -30,19 +32,20 @@ plate = np.zeros(poslen)
 mjd = np.zeros(poslen).astype(str)
 fiberid = np.zeros(poslen)
 clusternames = np.zeros(poslen).astype(str)
+seperation = np.zeros(poslen)
 
 for j in range(0,poslen):
     clusterredshift[j] = positions[j][109]
     clusternames[j] = str(positions[j][105])
+    seperation[j] = positions[j][114]
     plate[j] = positions[j][4]
     mjd[j] = str(positions[j][5])
-    # print(mjd[j])
-    # mjd[j] = round(mjd[j])
     fiberid[j] = positions[j][6]
 
 # mjdstr = " ".join(str(e) for e in mjd)
 # print(clusternames)
 mjd = np.array2string(mjd)
+print(len(mjd))
 # print(type(mjd))
 
 specsample = np.array([0,2,3,4,5]) #indexs of quasars to look at (for later use but added here)
@@ -74,13 +77,11 @@ for specind in specsample:
          mjdspec = fitdata[0][29]
 
     mjdspec = str(mjdspec)
-    # print(mjdspec)
     index = mjd.find(mjdspec)
-    # print(len(mjdstr))
-    # print(index)
+
     clusterz = clusterredshift[index]
-    # print(clusterz)
     name = clusternames[index]
+    sep = seperation[index]
     # print(name)
 
     lyalphacalc = 1215.67*(1+redshift) #calc lya using redshift
@@ -187,4 +188,5 @@ for specind in specsample:
 # plt.ylabel('Flux')
 # plt.legend()
 
-# plt.show()
+
+plt.show()

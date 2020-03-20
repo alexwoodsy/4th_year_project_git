@@ -25,10 +25,10 @@ def findpct(array,pct):
     return selectedvals
 
 
-#imports the spectra from the spectra folder
+# imports the spectra from the spectra folder
 specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
-#add indexing for spectra in file to allow loop over all
+# add indexing for spectra in file to allow loop over all
 
 specsample = np.array([1000])#indexs of quasars to look at (for later use but added here)
 
