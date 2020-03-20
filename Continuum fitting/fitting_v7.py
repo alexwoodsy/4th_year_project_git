@@ -87,7 +87,7 @@ def contfitv7(specsample,showplot):
         #s/n check and
         #loop increments
 
-        if lyalphacalc - wlen[0] < 1000:
+        if lyalphacalc - wlen[0] < 100:
             print('z warning!: '+spec+' z = '+ str(redshift) +' too low - normspec = 0 array')
             normspec = np.zeros(speclen)
         elif ston < stonlim:
@@ -144,7 +144,7 @@ def contfitv7(specsample,showplot):
 
 
         #plotting:
-            if len(specsample) < 5:
+            if len(specsample) < 10:
                 wlim = speclen
                 plt.figure(spec[:20])
                 #plt.title('continuum fitting')

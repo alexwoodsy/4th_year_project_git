@@ -62,6 +62,21 @@ for carlaselect in match[0:1]:
         if clusternames[i] == carlaselect and specnames[i][-4:] == 'fits':
             specmatch.append(specnames[i])
 
-    #stack here - specmatch = qso to stack
+#stack here - specmatch = qso to stack
+    wlen, normspec, lyalpha = fitmeth.contfitv7(specmatch[0:8], showplot = True)
 
-wlen, normspec, lyalpha = fitmeth.contfitv7(specmatch[0:4], True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
