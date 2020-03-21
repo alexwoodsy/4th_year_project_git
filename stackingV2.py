@@ -10,13 +10,13 @@ import sys
 sys.path.append('C:/Users/jason/GIT/4th_year_project_git/Continuum Fitting')
 import fittingmethods as fitmeth
 
-#plt.style.use('mystyle')
+plt.style.use('mystyle')
 
 #imports the spectra from the spectra folder
 specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 
-specsample = np.array([0,2,4])
+specsample = np.array([0,1000])
 
 positions = fits.getdata('PositionsTable.fits',ext=1)
 poslen = len(positions)
@@ -80,7 +80,7 @@ for specind in specsample:
 
         # gcredshift = clusterredshift[index2]
         gcredshift = 0
-        print(gcredshift)
+        # print(gcredshift)
         gclyalpha = 1215.67*(1+gcredshift)
 
         wlen, normspec, lyalpha = fitmeth.contfitv6(specind)
