@@ -37,7 +37,7 @@ specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 
-def contfitv7(specsample,showplot):
+def contfitv7(specsample,zlim,stonlim,showplot,showerror):
 
     for spec in specsample:
         specdirectory = 'Spectra/'+spec
@@ -68,7 +68,6 @@ def contfitv7(specsample,showplot):
              redshift = fitdata[0][38]
 
     #s/n checking
-        stonlim = 5 #lower limit on accepted s/n
         std = (1/ivar)**0.5
         ston = np.median(flux/std)
 
@@ -87,12 +86,14 @@ def contfitv7(specsample,showplot):
         #s/n check and
         #loop increments
 
-        if lyalphacalc - wlen[0] < 100:
-            print('z warning!: '+spec+' z = '+ str(redshift) +' too low - normspec = 0 array')
+        if redshift < zlim and showerror:
             normspec = np.zeros(speclen)
+            if showerror == True:
+                print('z warning!: '+spec+' z = '+ str(redshift) +' too low - normspec = 0 array')
         elif ston < stonlim:
-            print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low - normspec = 0 array')
             normspec = np.zeros(speclen)
+            if showerror == True:
+                print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low - normspec = 0 array')
         else:
             step = 0
             while step <= speclen:
@@ -144,7 +145,7 @@ def contfitv7(specsample,showplot):
 
 
         #plotting:
-            if len(specsample) < 10:
+            if len(specsample) < 10 and showplot == True:
                 wlim = speclen
                 plt.figure(spec[:20])
                 #plt.title('continuum fitting')
@@ -171,8 +172,9 @@ def contfitv7(specsample,showplot):
 
 
 
-
-
-#specsample = ['spec-0343-51692-0145.fits', 'spec-0344-51693-0159.fits', 'spec-0410-51816-0106.fits']
-
-#wlen, normspec, lyalpha = contfitv7(specsample, showplot=False)
+#
+#
+# specsample = ['spec-0343-51692-0145.fits']
+# for spec in specsample:
+#     spec = [spec]
+#     wlen, normspec, lyalpha = contfitv7(spec, showplot = True)
