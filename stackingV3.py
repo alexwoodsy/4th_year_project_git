@@ -68,7 +68,7 @@ for carlaselect in match[0:1]:
             specmatch.append(specnames[i])
 
 #stack here - specmatch = qso to stack
-    wlen, normspec, lyalpha = fitmeth.contfitv7(specmatch[0:8], showplot = True)
+    wlen, normspec, lyalpha = fitmeth.contfitv7(specmatch[7:8], showplot = True)
 
     clusterredshift = 0
     wlenshift = wlen/(1+clusterredshift)
@@ -79,7 +79,7 @@ for carlaselect in match[0:1]:
     wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
     normspechighres = wlenintpol(wlenhighres)
     normspeckstack = normspeckstack + normspechighres
-
+    # print(normspeckstack)
     # plt.plot(wlenshift,normspec)
     # plt.plot(wlenhighres,normspechighres)
 
@@ -99,5 +99,3 @@ plt.xlabel('wavelength (Angstroms)')
 plt.ylabel('Flux')
 plt.title('Stacked?')
 plt.show()
-
-#
