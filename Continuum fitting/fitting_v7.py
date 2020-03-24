@@ -37,7 +37,22 @@ specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 
-def contfitv7(specsample,showplot):
+#ref lines from sdss
+refline = open('refline.txt', 'r')
+linename = []
+wlenline = np.array([])
+for line in refline:
+    line = line.strip()
+    columns = line.split()
+    wlenline = np.append(wlenline, float(columns[0]))
+    linename.append(columns[1])
+refline.close()
+
+linename = linename[0:12] #restrict higher WLEN lines
+wlenline = wlenline[0:12]
+
+
+def contfitv7(specsample,zlim,stonlim,showplot,showerror):
 
     for spec in specsample:
         specdirectory = 'Spectra/'+spec
@@ -68,58 +83,76 @@ def contfitv7(specsample,showplot):
              redshift = fitdata[0][38]
 
     #s/n checking
-        stonlim = 5 #lower limit on accepted s/n
         std = (1/ivar)**0.5
         ston = np.median(flux/std)
 
 
-        #lyalpha considerations
-        lyalphacalc = 1215.67*(1+redshift)#calc lya using redshift
-        #print('lyalpha = ',lyalphacalc)
-        lyalphaind = (np.abs(wlen - lyalphacalc)).argmin()#finds index of nearest point in data
+
+    #z correct refline and find corresponding index 9 (finds ly alpha too)
+        wlenlinezcorr = wlenline*(1+redshift)
+        wlenlineind = np.array([]).astype(int)
+        for i in range(0,len(wlenlinezcorr)):
+            ind = (np.abs(wlen - wlenlinezcorr[i])).argmin()#finds index of nearest point in data
+            wlenlineind = np.append(wlenlineind,ind).astype(int)
+
+    #lyalpha considerations
+        lyalphaind = wlenlineind[1]
 
     #fitting:
         #split the spec in two about lyalpha peak
-        pw = 150
+        pw = 0
         intervalwlen = np.array([0])
         winpeak = np.array([0])
 
         #s/n check and
         #loop increments
 
-        if lyalphacalc - wlen[0] < 100:
-            print('z warning!: '+spec+' z = '+ str(redshift) +' too low - normspec = 0 array')
+        if redshift < zlim and showerror:
             normspec = np.zeros(speclen)
+            if showerror == True:
+                print('z warning!: '+spec+' z = '+ str(redshift) +' too low - normspec = 0 array')
         elif ston < stonlim:
-            print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low - normspec = 0 array')
             normspec = np.zeros(speclen)
+            if showerror == True:
+                print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low - normspec = 0 array')
         else:
             step = 0
             while step <= speclen:
+
                 if step <= lyalphaind:
-                    winnum = 50
-                    window = int(speclen/winnum)
-                    percentage = 0.2
+                    winnum = 15
+                    window = int(lyalphaind/winnum)
+                    percentage = 0.05
                     pct = int(window*percentage)
 
                     windata = flux[step:(step+window)]
                     winpeakind = step + findpctmax(windata,pct)
+                    for j in range (0,len(wlenline)):
+                        for i in range(0,len(winpeakind)): #removes inertvals too close to lyman alpha
+                            if abs(wlenlineind[j] - winpeakind[i]) < 30:
+                                winpeakind[i] = -10
+                    winpeakind = winpeakind[winpeakind != -10]
                     winpeak = np.append(winpeak,flux[winpeakind])
                     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
                     step = step + window
-                    if lyalphaind-step < int(pw/2):
-                        winpeakind = np.arange(step,(step+window))
-                        winpeak = np.append(winpeak,flux[winpeakind])
-                        intervalwlen = np.append(intervalwlen,wlen[winpeakind])
-                        step = step + window
+                    # if lyalphaind-step < int(pw/2): #selcts all values around lyalpha
+                    #     winpeakind = np.arange(step,(step+window))
+                    #     winpeak = np.append(winpeak,flux[winpeakind])
+                    #     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
+                    #     step = step + window
                 else:
-                    winnum = 90
-                    window = int(speclen/winnum)
+                    winnum = 50
+                    window = int((speclen-lyalphaind)/winnum)
                     percentage = 0.2
                     pct = int(window*percentage)
 
                     windata = flux[step:(step+window)]
                     winpeakind = step + findpctmean(windata,pct)
+                    for j in range (0,len(wlenline)):
+                        for i in range(0,len(winpeakind)): #removes inertvals too close to lyman alpha
+                            if abs(wlenlineind[j] - winpeakind[i]) < 30:
+                                winpeakind[i] = -10
+                    winpeakind = winpeakind[winpeakind != -10]
                     winpeak = np.append(winpeak,flux[winpeakind])
                     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
                     step = step + window
@@ -130,13 +163,12 @@ def contfitv7(specsample,showplot):
                     #     step = step + window
 
         #pad interval with start/end value to allign correctly
-            #winpeakmed = step + findmed(windata)
-            #startind = findmed(flux[0:window])
             winpeak[0] = flux[0]
             intervalwlen[0] = wlen[0]
-            #endind = findmed(flux[-window:])
-            winpeak[-1] = flux[-1]
+
             intervalwlen[-1] = wlen[-1]
+            winpeak[-1] = flux[-1]
+
 
             intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
             contfit = intpol(wlen)
@@ -144,14 +176,16 @@ def contfitv7(specsample,showplot):
 
 
         #plotting:
-            if len(specsample) < 10:
+            if len(specsample) < 10 and showplot == True:
                 wlim = speclen
                 plt.figure(spec[:20])
                 #plt.title('continuum fitting')
                 plt.plot(wlen[0:wlim],flux[0:wlim],label=spec[:20] + 'z = ' + str(redshift))
                 plt.plot(intervalwlen[0:wlim],winpeak[0:wlim],'*',label='intervals')
                 plt.plot(wlen[0:wlim],contfit[0:wlim],'--',label='interpolation')
-                plt.plot(wlen[lyalphaind],flux[lyalphaind],'.',label=r'Ly$\alpha$')
+                plt.plot(wlen[wlenlineind],flux[wlenlineind],'.',label='linerefs')
+                for i in range(0,len(wlenlineind)):
+                    plt.text(wlen[wlenlineind[i]], flux[wlenlineind[i]]+0.3, linename[i], fontsize=9)
                 plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
                 plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
                 #if specind == specsample[0]:
@@ -167,12 +201,13 @@ def contfitv7(specsample,showplot):
     if showplot == True:
         plt.show()
 
-    return wlen, normspec, lyalphacalc
+    return wlen, normspec, wlenlineind
 
 
 
-
-
-#specsample = ['spec-0343-51692-0145.fits', 'spec-0344-51693-0159.fits', 'spec-0410-51816-0106.fits']
-
-#wlen, normspec, lyalpha = contfitv7(specsample, showplot=False)
+#
+#
+# specsample = ['spec-0343-51692-0145.fits']
+# for spec in specsample:
+#     spec = [spec]
+#     wlen, normspec, lyalpha = contfitv7(spec, showplot = True)

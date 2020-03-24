@@ -58,12 +58,11 @@ for i in carlanames:
 
 for carlaselect in match[0:1]:
     specmatch = []
-    for i in range(0,poslen):
+    for i in range(0,poslen): #CHNAGE
         if clusternames[i] == carlaselect and specnames[i][-4:] == 'fits':
             specmatch.append(specnames[i])
-
+print(specmatch)
 #stack here - specmatch = qso to stack
-    wlen, normspec, lyalpha = fitmeth.contfitv7(specmatch[0:8], showplot = True)
 
 
 
