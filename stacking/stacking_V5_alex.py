@@ -16,9 +16,9 @@ import fitting_v7 as fitmeth
 #imports the spectra from the spectra folder
 specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
-#
-# #set up sample to be looped over
-# #read in data linking cluster to qso's
+
+#set up sample to be looped over
+#read in data linking cluster to qso's
 posdata = fits.getdata('PositionsTable.fits',ext=1)
 poslen = len(posdata)
 clusterredshift = np.zeros(poslen)
@@ -68,70 +68,43 @@ for carlaselect in range(0,1):
         if clusternames[i] == match[carlaselect] and specnames[i][-4:] == 'fits':
             specmatch.append(specnames[i])
 
-    specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
-    normspeckstack = np.zeros(100000)
-    wlenmin = []
-    wlenmax = []
-
-    gcredshift = 0#matchredshift[carlaselect]
-    gclyalpha = 1215.67*(1+gcredshift)
+    gcredshift = matchredshift[carlaselect]
 
     zlim = 2.2
-    stonlim = 2
+    stonlim = 1
 
-    wlentot = 0
+    specmatch = specmatch#[0:20]
+    #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
+
+    normspeckstack = np.zeros(1000000)
+    wlenhighres = np.linspace(0, 6000, 1000000)
+    wlenmin = 10000
+    wlenmax = 0
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind = fitmeth.contfitv7(spec, zlim , stonlim, showplot = True, showerror = True)
+        wlen, normspec, wlenlineind, redshift = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
         wlenshift = wlen/(1+gcredshift)
-        if len(wlenshift) > wlentot:
-            wlentot = len(wlenshift)
+        wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=0)
+        if wlenshift[0] < wlenmin:
+            wlenmin = wlenshift[0]
+        if wlenshift[-1] > wlenmax:
+            wlenmax = wlenshift[-1]
+        normspechighres = wlenintpol(wlenhighres)
+        normspeckstack = normspeckstack + normspechighres
+        plt.figure('unstacked')
+        plt.plot(wlenshift, normspec)
+    print('stacking done for ' + match[carlaselect])
 
+    #cut extra zeropadding
+    start = (np.abs(wlenhighres - wlenmin)).argmin()
+    end = (np.abs(wlenhighres - wlenmax)).argmin()
+    wlenhighres = wlenhighres[start:end]
+    normspeckstack = normspeckstack[start:end]
 
+    #downsample stacked specind
+    dsrange = np.linspace(wlenhighres[0], wlenhighres[-1],5000)
+    dsnormspewcstack = signal.resample(normspeckstack, 5000)
 
-
-
-    #     wlenmin.append(wlenshift[0])
-    #     wlenmax.append(wlenshift[-1])
-    # print('lim search done for ' + match[carlaselect])
-    #
-    # #zero pad spectra to the length of wlenhighres
-    #
-    # lowdiff, highdiff = wlenshift[0], wlenshift[-1]
-    #
-    #
-    #
-    # wlenhighres = np.linspace(np.max(wlenmin), np.min(wlenmax), 100000)
-    #
-    # for spec in specmatch:
-    #     spec = [spec]
-    #     wlen, normspec, lyalpha = fitmeth.contfitv7(spec, zlim ,stonlim, showplot = False, showerror = False)
-    #     wlenshift = wlen/(1+gcredshift)
-    #     wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
-    #     normspechighres = wlenintpol(wlenhighres)
-    #     plt.plot(wlenhighres,normspechighres)
-    #     normspeckstack = normspeckstack + normspechighres
-    # print('stacking done for ' + match[carlaselect])
-    #
-    #
-    #
-    # plt.figure('stacked spectra for '+ match[carlaselect])
-    # plt.plot(wlenhighres, normspeckstack)
-    # plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
+    plt.figure('stacked spectra for '+ match[carlaselect])
+    plt.plot(dsrange, dsnormspewcstack)
+    plt.show()

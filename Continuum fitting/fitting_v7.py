@@ -116,6 +116,7 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
             if showerror == True:
                 print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low - normspec = 0 array')
         else:
+            print('adding '+spec+' S/N = '+ str(ston) +' to stack.')
             step = 0
             while step <= speclen:
 
