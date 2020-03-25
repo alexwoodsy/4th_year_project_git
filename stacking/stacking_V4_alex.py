@@ -78,10 +78,10 @@ for carlaselect in range(0,1):
 
     zlim = 2.2
     stonlim = 5
-
+    specmatch = specmatch[0:25]
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
+        wlen, normspec, wlenlineind = fitmeth.contfitv7(spec, zlim , stonlim, showplot = True, showerror = True)
         wlenshift = wlen/(1+gcredshift)
         wlenmin.append(np.min(wlenshift))
         wlenmax.append(np.max(wlenshift))
@@ -96,8 +96,9 @@ for carlaselect in range(0,1):
         wlenshift = wlen/(1+gcredshift)
         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
         normspechighres = wlenintpol(wlenhighres)
-        plt.plot(wlenhighres,normspechighres)
         normspeckstack = normspeckstack + normspechighres
+        plt.figure('unstacked')
+        plt.plot(wlenhighres, normspeckstack)
     print('stacking done for ' + match[carlaselect])
 
     #downsample stacked specind
