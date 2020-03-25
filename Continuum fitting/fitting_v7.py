@@ -201,7 +201,7 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
     if showplot == True:
         plt.show()
 
-    return wlen, normspec, wlenlineind
+    return wlen, normspec, wlenlineind, redshift
 
 
 

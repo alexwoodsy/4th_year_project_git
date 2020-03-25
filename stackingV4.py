@@ -7,9 +7,7 @@ from scipy import interpolate, signal
 import os
 #import fitting
 import sys
-
 sys.path.append('C:/Users/jason/GIT/4th_year_project_git/Continuum Fitting')
-
 # sys.path.append('C:/Users/alexw/Documents/GitHub/4th_year_project_git/Continuum fitting')
 #path for other pc sys.path.append('C:/Users/alexw/OneDrive/Documents/University work/4th year work/Main project/4th_year_project_git/Continuum fitting')
 import fitting_v7 as fitmeth
@@ -65,7 +63,7 @@ for i in range(0,carlalen):
 #####----STACKING---#####
 
 #get spec names for a carla target - do stacking
-for carlaselect in range(0,1):
+for carlaselect in range(0,2):
     specmatch = []
     for i in range(0,poslen): #CHNAGE
         if clusternames[i] == match[carlaselect] and specnames[i][-4:] == 'fits':
@@ -81,25 +79,23 @@ for carlaselect in range(0,1):
 
     zlim = 2.2
     stonlim = 5
-    specmatch = specmatch[0:25]
+
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind, redshift = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
-        wlenshift = wlen/(1+redshift)
+        wlen, normspec, wlenlineind = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
+        wlenshift = wlen/(1+gcredshift)
         wlenmin.append(np.min(wlenshift))
         wlenmax.append(np.max(wlenshift))
     print('lim search done for ' + match[carlaselect])
 
-    wlenhighres = np.linspace(np.min(wlenmin), np.max(wlenmax), 100000)
-    # wlenhighres = np.linspace(1000, 4000, 100000)
-
+    wlenhighres = np.linspace(np.max(wlenmin), np.min(wlenmax), 100000)
 
 
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind, redshift = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
-        wlenshift = wlen/(1+redshift)
-        wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear',bounds_error=False)
+        wlen, normspec, wlenlineind = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
+        wlenshift = wlen/(1+gcredshift)
+        wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
         normspechighres = wlenintpol(wlenhighres)
         plt.plot(wlenhighres,normspechighres)
         normspeckstack = normspeckstack + normspechighres
@@ -107,27 +103,8 @@ for carlaselect in range(0,1):
 
     #downsample stacked specind
     dsrange = np.linspace(wlenhighres[0], wlenhighres[-1],5000)
-    # dsrange = dsrange[dsnormspewcstack!=0]
     dsnormspewcstack = signal.resample(normspeckstack, 5000)
-    # dsnormspewcstack = dsnormspewcstack[dsnormspewcstack!=0]
 
     plt.figure('stacked spectra for '+ match[carlaselect])
     plt.plot(dsrange, dsnormspewcstack)
     plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
