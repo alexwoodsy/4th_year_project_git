@@ -92,7 +92,7 @@ for carlaselect in range(0,1):
 
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
+        wlen, normspec, wlenlineind,redshift = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
         wlenshift = wlen/(1+gcredshift)
         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear')
         normspechighres = wlenintpol(wlenhighres)
