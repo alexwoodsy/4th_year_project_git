@@ -68,21 +68,24 @@ for carlaselect in range(0,1):
         if clusternames[i] == match[carlaselect] and specnames[i][-4:] == 'fits':
             specmatch.append(specnames[i])
 
+
+    #gc absorber location
     gcredshift = matchredshift[carlaselect]
+    zlim = 2
+    stonlim = 8
 
-    zlim = 2.2
-    stonlim = 1
-
-    specmatch = specmatch#[0:20]
+    #specmatch = specmatch[0:5]
     #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
 
     normspeckstack = np.zeros(1000000)
     wlenhighres = np.linspace(0, 6000, 1000000)
     wlenmin = 10000
     wlenmax = 0
+    stackstatus = []
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind, redshift = fitmeth.contfitv7(spec, zlim , stonlim, showplot = False, showerror = True)
+        wlen, normspec, wlenlineind, redshift, stackcode = fitmeth.contfitv7(spec, zlim , stonlim, showplot =True, showerror = False)
+        stackstatus.append(stackcode)
         wlenshift = wlen/(1+gcredshift)
         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=0)
         if wlenshift[0] < wlenmin:
@@ -91,9 +94,37 @@ for carlaselect in range(0,1):
             wlenmax = wlenshift[-1]
         normspechighres = wlenintpol(wlenhighres)
         normspeckstack = normspeckstack + normspechighres
-        plt.figure('unstacked')
+        plt.figure(match[carlaselect] +' unstacked ')
         plt.plot(wlenshift, normspec)
-    print('stacking done for ' + match[carlaselect])
+
+
+    #output
+    print(' ')
+    print('------------------------------------------------------------------------------------------------------------')
+    print(' ')
+    print('stacking attempted for '+ str(len(stackstatus)) + ' spectra for CARLA: ' + match[carlaselect])
+
+    stacktot = zerrortot = foresterrortot = stonerrortot = 0
+    for x in stackstatus:
+        if x == 'success':
+            stacktot = stacktot + 1
+        if x == 'zerror':
+            zerrortot = zerrortot + 1
+        if x == 'foresterror':
+            foresterrortot = foresterrortot + 1
+        if x =='stonerror':
+            stonerrortot = stonerrortot + 1
+    errortot = zerrortot + foresterrortot + stonerrortot
+
+    print(str(stacktot) +' stacked successfully with ' + str(errortot) + ' not used with:')
+    print(str(zerrortot) + ' outside redshift range z > ' + str(zlim))
+    print(str(foresterrortot) + ' lyalpaforest out of spectra range' )
+    print(str(stonerrortot) + ' S/N below ' + str(stonlim))
+
+
+    #stacking data:
+
+
 
     #cut extra zeropadding
     start = (np.abs(wlenhighres - wlenmin)).argmin()

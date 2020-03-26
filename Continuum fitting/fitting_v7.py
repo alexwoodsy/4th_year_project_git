@@ -96,41 +96,54 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
             wlenlineind = np.append(wlenlineind,ind).astype(int)
 
     #lyalpha considerations
+        lyalpha = 1215.67*(1+redshift)#calc lya using redshift
         lyalphaind = wlenlineind[1]
+
 
     #fitting:
         #split the spec in two about lyalpha peak
-        pw = 0
+        peaklim = 0 #zero to fit peaks
         intervalwlen = np.array([0])
         winpeak = np.array([0])
+        forestwinnum, forestpct = 15, 0.05
+        otherwinnum, otherpct =  50, 0.2
+
 
         #s/n check and
-        #loop increments
+        #loop increments print('z warning!: '+spec+' has z too low with  lyalpha '+str(lyalpha - wlen[0]+' Anstroms before start of spectra')
 
         if redshift < zlim and showerror:
             normspec = np.zeros(speclen)
+            stackstatus = 'zerror'
             if showerror == True:
-                print('z warning!: '+spec+' z = '+ str(redshift) +' too low - normspec = 0 array')
+                print('z warning!: '+spec+' z = '+ str(redshift) +' too low (S/N = '+ str(ston) +') - normspec = 0 array')
         elif ston < stonlim:
             normspec = np.zeros(speclen)
+            stackstatus = 'stonerror'
             if showerror == True:
-                print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low - normspec = 0 array')
+                print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low (z = '+ str(redshift) +') - normspec = 0 array')
+        elif lyalpha - wlen[0] <= 30:
+            normspec = np.zeros(speclen)
+            stackstatus = 'foresterror'
+            if showerror == True:
+                print('z warning!: '+spec+' has z too low with  lyalpha '+ str(lyalpha - wlen[0]) + ' Angstroms before start of spectra')
         else:
-            print('adding '+spec+' S/N = '+ str(ston) +' to stack.')
+            #proceed with continuum fitting
+            stackstatus = 'success'
+            if showerror == True:
+                print('adding '+spec+' S/N = '+ str(ston) +'and z = '+ str(redshift) +' to stack.')
             step = 0
             while step <= speclen:
-
                 if step <= lyalphaind:
-                    winnum = 15
+                    winnum = forestwinnum
                     window = int(lyalphaind/winnum)
-                    percentage = 0.05
+                    percentage = forestpct
                     pct = int(window*percentage)
-
                     windata = flux[step:(step+window)]
                     winpeakind = step + findpctmax(windata,pct)
                     for j in range (0,len(wlenline)):
                         for i in range(0,len(winpeakind)): #removes inertvals too close to lyman alpha
-                            if abs(wlenlineind[j] - winpeakind[i]) < 30:
+                            if abs(wlenlineind[j] - winpeakind[i]) < peaklim:
                                 winpeakind[i] = -10
                     winpeakind = winpeakind[winpeakind != -10]
                     winpeak = np.append(winpeak,flux[winpeakind])
@@ -141,27 +154,26 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
                     #     winpeak = np.append(winpeak,flux[winpeakind])
                     #     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
                     #     step = step + window
-                else:
-                    winnum = 50
-                    window = int((speclen-lyalphaind)/winnum)
-                    percentage = 0.2
-                    pct = int(window*percentage)
 
-                    windata = flux[step:(step+window)]
-                    winpeakind = step + findpctmean(windata,pct)
-                    for j in range (0,len(wlenline)):
-                        for i in range(0,len(winpeakind)): #removes inertvals too close to lyman alpha
-                            if abs(wlenlineind[j] - winpeakind[i]) < 30:
-                                winpeakind[i] = -10
-                    winpeakind = winpeakind[winpeakind != -10]
-                    winpeak = np.append(winpeak,flux[winpeakind])
-                    intervalwlen = np.append(intervalwlen,wlen[winpeakind])
-                    step = step + window
-                    # if lyalphaind-step > -int(pw/2):
-                    #     winpeakind = np.arange(step,(step+window))
-                    #     winpeak = np.append(winpeak,flux[winpeakind])
-                    #     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
-                    #     step = step + window
+                winnum = otherwinnum
+                window = int((speclen-lyalphaind)/winnum)
+                percentage = otherpct
+                pct = int(window*percentage)
+                windata = flux[step:(step+window)]
+                winpeakind = step + findpctmean(windata,pct)
+                for j in range (0,len(wlenline)):
+                    for i in range(0,len(winpeakind)): #removes inertvals too close to emission lines
+                        if abs(wlenlineind[j] - winpeakind[i]) < peaklim:
+                            winpeakind[i] = -10
+                winpeakind = winpeakind[winpeakind != -10]
+                winpeak = np.append(winpeak,flux[winpeakind])
+                intervalwlen = np.append(intervalwlen,wlen[winpeakind])
+                step = step + window
+                # if lyalphaind-step > -int(pw/2):
+                #     winpeakind = np.arange(step,(step+window))
+                #     winpeak = np.append(winpeak,flux[winpeakind])
+                #     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
+                #     step = step + window
 
         #pad interval with start/end value to allign correctly
             winpeak[0] = flux[0]
@@ -202,7 +214,10 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
     if showplot == True:
         plt.show()
 
-    return wlen, normspec, wlenlineind, redshift
+    #total errors and total stacked
+
+
+    return wlen, normspec, wlenlineind, redshift, stackstatus
 
 
 
