@@ -1,17 +1,13 @@
 # Quasars Probing Galaxy Clusters
-With the power of using the quasars probing
-method in the search and study for foreground objects such as other QSO and protoclusters clearly
-shown by [Hennawi et al., 2006, Cai et al., 2016],
-the door has been opened for future research with
-this technique. 
-In our research we aim to utilise
-these techniques to study protoclusters at z < 2.
-Measuring the HI column density within the protoclusters to infer the structure and physical mass
-distribution of these ancient structures, revealing important information about the predecessors to the galaxy clusters we see in the universe
-today. To accelerate our study of protoclusters
-at z > 2 a set of predefined targets signposted
-by the CARLA program [Wylezalek et al., 2013]
-will be used.
+Through studying the effect of intervening neutral hydrogen in the spectra of high redshift QSO, A
+series of studies have been performed, advancing current techniques used to understand protoclusters
+that coalesced under gravity to form the cosmic structures we see in the universe today. This
+review analyses the preceding methods by which these structures have been studied, as well as
+detailing a new line of research, first crafted for use in the study of other QSO in the line of sight
+to background quasars. This work utilised this quasar probing technique
+to study protoclusters by measuring absorption of their neutral hydrogen content in the spectra of
+background quasars. With this, outlines for a new study in this manner is proposed, detailing the
+aims, data and method for this new investigation.
 
 ### Prerequisites
 
@@ -35,12 +31,4 @@ sorting some major gittttt
 
 ```
 * Python
-* A dream
-```
-<!-- * [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds -->
 
-<!-- ## Contributing -->
-
-<!-- Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us. -->
