@@ -1,6 +1,17 @@
 # Quasars Probing Galaxy Clusters
-
-gettin dat ly alpha
+With the power of using the quasars probing
+method in the search and study for foreground objects such as other QSO and protoclusters clearly
+shown by [Hennawi et al., 2006, Cai et al., 2016],
+the door has been opened for future research with
+this technique. 
+In our research we aim to utilise
+these techniques to study protoclusters at z < 2.
+Measuring the HI column density within the protoclusters to infer the structure and physical mass
+distribution of these ancient structures, revealing important information about the predecessors to the galaxy clusters we see in the universe
+today. To accelerate our study of protoclusters
+at z > 2 a set of predefined targets signposted
+by the CARLA program [Wylezalek et al., 2013]
+will be used.
 
 ### Prerequisites
 
