@@ -11,7 +11,7 @@ sys.path.append('C:/Users/alexw/Documents/GitHub/4th_year_project_git/Continuum 
 #path for other pc sys.path.append('C:/Users/alexw/OneDrive/Documents/University work/4th year work/Main project/4th_year_project_git/Continuum fitting')
 import fitting_v7 as fitmeth
 
-#plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
+plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
 #imports the spectra from the spectra folder
 specnames = next(os.walk('Spectra'))[2]
@@ -62,7 +62,9 @@ for i in range(0,carlalen):
 #####----STACKING---#####
 
 #get spec names for a carla target - do stacking
-for carlaselect in range(0,1):
+for carlaselect in range(0,1): #all change to - matchlen
+    print('processing '+ match[carlaselect])
+
     specmatch = []
     for i in range(0,poslen): #CHNAGE
         if clusternames[i] == match[carlaselect] and specnames[i][-4:] == 'fits':
@@ -71,11 +73,12 @@ for carlaselect in range(0,1):
 
     #gc absorber location
     gcredshift = matchredshift[carlaselect]
-    zlim = 2
-    stonlim = 8
+
+    zlim = 2.15
+    stonlim = 1
 
     #specmatch = specmatch[0:5]
-    #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
+    specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
 
     normspeckstack = np.zeros(1000000)
     wlenhighres = np.linspace(0, 6000, 1000000)
@@ -84,7 +87,7 @@ for carlaselect in range(0,1):
     stackstatus = []
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind, redshift, stackcode = fitmeth.contfitv7(spec, zlim , stonlim, showplot =True, showerror = False)
+        wlen, normspec, wlenlineind, redshift, stackcode = fitmeth.contfitv7(spec, zlim , stonlim, gcredshift,showplot = True, showerror = True)
         stackstatus.append(stackcode)
         wlenshift = wlen/(1+gcredshift)
         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=0)
@@ -94,9 +97,15 @@ for carlaselect in range(0,1):
             wlenmax = wlenshift[-1]
         normspechighres = wlenintpol(wlenhighres)
         normspeckstack = normspeckstack + normspechighres
-        plt.figure(match[carlaselect] +' unstacked ')
-        plt.plot(wlenshift, normspec)
+        if np.mean(normspec) != 0:
+            plt.figure(match[carlaselect] +' unstacked ')
+            plt.plot(wlenshift, normspec)
+            plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+            plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
+    figuretitle = match[carlaselect] + '_unstacked'
+    savepath = 'stacking/figures/'+figuretitle+'.svg'
+    plt.savefig(savepath)
 
     #output
     print(' ')
@@ -124,8 +133,6 @@ for carlaselect in range(0,1):
 
     #stacking data:
 
-
-
     #cut extra zeropadding
     start = (np.abs(wlenhighres - wlenmin)).argmin()
     end = (np.abs(wlenhighres - wlenmax)).argmin()
@@ -136,6 +143,27 @@ for carlaselect in range(0,1):
     dsrange = np.linspace(wlenhighres[0], wlenhighres[-1],5000)
     dsnormspewcstack = signal.resample(normspeckstack, 5000)
 
-    plt.figure('stacked spectra for '+ match[carlaselect])
+    figuretitle = match[carlaselect] + '_stacked'
+    plt.figure(figuretitle)
     plt.plot(dsrange, dsnormspewcstack)
+    plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+    plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+    string = match[carlaselect] + ' z = '+ str(gcredshift) + r' Ly$\alpha$ absorbtion'
+    plt.text((1215.67), np.max(dsnormspewcstack), string)
+    plt.plot(np.array([(1215.67),(1215.67)]),np.array([np.min(dsnormspewcstack),np.max(dsnormspewcstack)]),'--')
+    savepath = 'stacking/figures/'+figuretitle+'.svg'
+    #plt.savefig(savepath)
+    #plt.close('all')
     plt.show()
+    print('saving '+ figuretitle)
+
+
+
+
+
+
+
+
+
+
+    #
