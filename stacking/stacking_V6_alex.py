@@ -82,7 +82,7 @@ for carlaselect in range(0,2): #all change to - matchlen
     stonlim = 1
 
     #specmatch = specmatch[0:5]
-    #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
+    specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
 
     normspeckstack = np.zeros(1000000)
     wlenhighres = np.linspace(0, 6000, 1000000)
@@ -92,7 +92,7 @@ for carlaselect in range(0,2): #all change to - matchlen
     for spec in specmatch:
         spec = [spec]
         wlen, normspec, wlenlineind, redshift, stackcode = fitmeth.contfitv8(spec, zlim , stonlim, gcredshift,
-        showplot = False, showerror = True)
+        showplot = True, showerror = True)
         stackstatus.append(stackcode)
         wlenshift = wlen/(1+gcredshift)
         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=0)

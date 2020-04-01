@@ -27,11 +27,7 @@ def findmed(array):
 def findpctmax(array,pct):
     ind = np.argsort(array)
     sortedarray = array[ind]
-    start = int(len(sortedarray)/2 - pct/2)
-    end = int(len(sortedarray)/2 + pct/2)
-    selectedvals = sortedarray[start:end]
-    #selectedinds = ind[-pct:] #indices of the top pct in array
-
+    selectedinds = ind[-pct:] #indices of the top pct in array
     selectedinds = ind[int(-pct*0.5)]
     return selectedinds
 
