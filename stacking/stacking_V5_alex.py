@@ -62,7 +62,10 @@ for i in range(0,carlalen):
 #####----STACKING---#####
 
 #get spec names for a carla target - do stacking
-for carlaselect in range(0,1): #all change to - matchlen
+
+multistack = np.zeros(5000)
+specstacktot = 0
+for carlaselect in range(0,20): #all change to - matchlen
     print('processing '+ match[carlaselect])
 
     specmatch = []
@@ -74,12 +77,11 @@ for carlaselect in range(0,1): #all change to - matchlen
     #gc absorber location
     gcredshift = matchredshift[carlaselect]
 
-    zlim = 2.15
+    zlim = gcredshift + 0.15
     stonlim = 1
 
     #specmatch = specmatch[0:5]
-    specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
-
+    #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
     normspeckstack = np.zeros(1000000)
     wlenhighres = np.linspace(0, 6000, 1000000)
     wlenmin = 10000
@@ -87,7 +89,7 @@ for carlaselect in range(0,1): #all change to - matchlen
     stackstatus = []
     for spec in specmatch:
         spec = [spec]
-        wlen, normspec, wlenlineind, redshift, stackcode = fitmeth.contfitv7(spec, zlim , stonlim, gcredshift,showplot = True, showerror = True)
+        wlen, normspec, wlenlineind, redshift, stackcode = fitmeth.contfitv7(spec, zlim , stonlim, gcredshift,showplot = False, showerror = False)
         stackstatus.append(stackcode)
         wlenshift = wlen/(1+gcredshift)
         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=0)
@@ -129,6 +131,7 @@ for carlaselect in range(0,1): #all change to - matchlen
     print(str(zerrortot) + ' outside redshift range z > ' + str(zlim))
     print(str(foresterrortot) + ' lyalpaforest out of spectra range' )
     print(str(stonerrortot) + ' S/N below ' + str(stonlim))
+    speckstacktot = specstacktot + stacktot
 
 
     #stacking data:
@@ -142,6 +145,7 @@ for carlaselect in range(0,1): #all change to - matchlen
     #downsample stacked specind
     dsrange = np.linspace(wlenhighres[0], wlenhighres[-1],5000)
     dsnormspewcstack = signal.resample(normspeckstack, 5000)
+    multistack = multistack + dsnormspewcstack
 
     figuretitle = match[carlaselect] + '_stacked'
     plt.figure(figuretitle)
@@ -157,9 +161,15 @@ for carlaselect in range(0,1): #all change to - matchlen
     plt.show()
     print('saving '+ figuretitle)
 
-
-
-
+plt.figure('multi-carla stack with '+ str(speckstacktot) +' spectra')
+print(speckstacktot)
+plt.plot(dsrange,multistack)
+plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+plt.ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+string = match[carlaselect] + ' z = '+ str(gcredshift) + r' Ly$\alpha$ absorbtion'
+plt.text((1215.67), np.max(dsnormspewcstack), string)
+plt.plot(np.array([(1215.67),(1215.67)]),np.array([np.min(dsnormspewcstack),np.max(dsnormspewcstack)]),'--')
+plt.show()
 
 
 
