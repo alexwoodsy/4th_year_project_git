@@ -9,6 +9,11 @@ import os
 #plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
 #calculates points slected in interval
+def findval(array,val):
+    array = np.asarray(array)
+    ind = np.abs(array - val).argmin()
+    return ind
+
 def findmax(array):
     array = np.asarray(array)
     ind = (np.abs(array - np.max(array))).argmin()
@@ -20,9 +25,12 @@ def findmed(array):
     return ind
 
 def findpctmax(array,pct):
-    sortedarray = np.argsort(array)
-    selectedvals = sortedarray[-pct:]
-    return selectedvals
+    ind = np.argsort(array)
+    sortedarray = array[ind]
+    selectedinds = ind[-pct:] #indices of the top pct in array
+
+    #selectedinds = ind[int(-pct*0.5)]
+    return selectedinds
 
 def findpctmean(array,pct):
     sortedarray = np.argsort(array)
@@ -52,7 +60,7 @@ linename = linename[0:12] #restrict higher WLEN lines
 wlenline = wlenline[0:12]
 
 
-def contfitv7(specsample,zlim,stonlim,showplot,showerror):
+def contfitv7(specsample,zlim,stonlim,gcredshift,showplot,showerror):
 
     for spec in specsample:
         specdirectory = 'Spectra/'+spec
@@ -97,15 +105,16 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
 
     #lyalpha considerations
         lyalpha = 1215.67*(1+redshift)#calc lya using redshift
+        gclyalpha = 1215.67*(1+gcredshift)
         lyalphaind = wlenlineind[1]
 
 
     #fitting:
         #split the spec in two about lyalpha peak
         peaklim = 0 #zero to fit peaks
-        intervalwlen = np.array([0])
-        winpeak = np.array([0])
-        forestwinnum, forestpct = 15, 0.05
+        intervalwlen = np.array([])
+        winpeak = np.array([])
+        forestwinnum, forestpct = 10, 0.1
         otherwinnum, otherpct =  50, 0.2
 
 
@@ -122,11 +131,11 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
             stackstatus = 'stonerror'
             if showerror == True:
                 print('S/N warning!: '+spec+' S/N = '+ str(ston) +' too low (z = '+ str(redshift) +') - normspec = 0 array')
-        elif lyalpha - wlen[0] <= 30:
+        elif gclyalpha - wlen[0] <= 30:
             normspec = np.zeros(speclen)
             stackstatus = 'foresterror'
             if showerror == True:
-                print('z warning!: '+spec+' has z too low with  lyalpha '+ str(lyalpha - wlen[0]) + ' Angstroms before start of spectra')
+                print('z warning!: '+spec+' has z too low with respect to gc withlyalpha '+ str(lyalpha - wlen[0]) + ' Angstroms before start of spectra')
         else:
             #proceed with continuum fitting
             stackstatus = 'success'
@@ -140,12 +149,12 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
                     percentage = forestpct
                     pct = int(window*percentage)
                     windata = flux[step:(step+window)]
-                    winpeakind = step + findpctmax(windata,pct)
-                    for j in range (0,len(wlenline)):
-                        for i in range(0,len(winpeakind)): #removes inertvals too close to lyman alpha
-                            if abs(wlenlineind[j] - winpeakind[i]) < peaklim:
-                                winpeakind[i] = -10
-                    winpeakind = winpeakind[winpeakind != -10]
+                    winpeakind = step + findpctmax(windata,pct)#change
+                    # for j in range (0,len(wlenline)):
+                    #     for i in range(0,len(winpeakind)): #removes inertvals too close to lyman alpha
+                    #         if abs(wlenlineind[j] - winpeakind[i]) < peaklim:
+                    #             winpeakind[i] = -10
+                    #winpeakind = winpeakind[winpeakind != -10]
                     winpeak = np.append(winpeak,flux[winpeakind])
                     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
                     step = step + window
@@ -154,33 +163,34 @@ def contfitv7(specsample,zlim,stonlim,showplot,showerror):
                     #     winpeak = np.append(winpeak,flux[winpeakind])
                     #     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
                     #     step = step + window
-
-                winnum = otherwinnum
-                window = int((speclen-lyalphaind)/winnum)
-                percentage = otherpct
-                pct = int(window*percentage)
-                windata = flux[step:(step+window)]
-                winpeakind = step + findpctmean(windata,pct)
-                for j in range (0,len(wlenline)):
-                    for i in range(0,len(winpeakind)): #removes inertvals too close to emission lines
-                        if abs(wlenlineind[j] - winpeakind[i]) < peaklim:
-                            winpeakind[i] = -10
-                winpeakind = winpeakind[winpeakind != -10]
-                winpeak = np.append(winpeak,flux[winpeakind])
-                intervalwlen = np.append(intervalwlen,wlen[winpeakind])
-                step = step + window
-                # if lyalphaind-step > -int(pw/2):
-                #     winpeakind = np.arange(step,(step+window))
-                #     winpeak = np.append(winpeak,flux[winpeakind])
-                #     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
-                #     step = step + window
+                else:
+                    winnum = otherwinnum
+                    window = int((speclen-lyalphaind)/winnum)
+                    percentage = otherpct
+                    pct = int(window*percentage)
+                    windata = flux[step:(step+window)]
+                    winpeakind = step + findpctmean(windata,pct)
+                    # for j in range (0,len(wlenline)):
+                    #     for i in range(0,len(winpeakind)): #removes inertvals too close to emission lines
+                    #         if abs(wlenlineind[j] - winpeakind[i]) < peaklim:
+                    #             winpeakind[i] = -10
+                    # winpeakind = winpeakind[winpeakind != -10]
+                    winpeak = np.append(winpeak,flux[winpeakind])
+                    intervalwlen = np.append(intervalwlen,wlen[winpeakind])
+                    step = step + window
+                    # if lyalphaind-step > -int(pw/2):
+                    #     winpeakind = np.arange(step,(step+window))
+                    #     winpeak = np.append(winpeak,flux[winpeakind])
+                    #     intervalwlen = np.append(intervalwlen,wlen[winpeakind])
+                    #     step = step + window
 
         #pad interval with start/end value to allign correctly
-            winpeak[0] = flux[0]
+            #start = int(lyalphaind/forestwinnum)
+            #startind = findpctmax(flux[0:start],pct)
+            #winpeak[0] = startind
             intervalwlen[0] = wlen[0]
-
             intervalwlen[-1] = wlen[-1]
-            winpeak[-1] = flux[-1]
+
 
 
             intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
