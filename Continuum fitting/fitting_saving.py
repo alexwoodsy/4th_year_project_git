@@ -20,6 +20,7 @@ from astropy.io import fits
 from scipy import interpolate, signal
 import os
 
+
 #definitions for use in fitting
 def findval(array,val): # find index of nearst value in array
     array = np.asarray(array)
@@ -60,7 +61,11 @@ def findpctmean(array,pct): #find median pct of data in array
 specnames = next(os.walk('Spectra'))[2]
 spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
-specnames = [specnames[0],specnames[1000]]
+#specnames = [specnames[0],specnames[1000]]
+
+counter = 0
+pctind = 0
+specnames = specnames[0:1000]
 for spec in specnames:
 
     #---------------------------data extraction-----------------------------#
@@ -113,9 +118,9 @@ for spec in specnames:
 
     #lymanalpha calculation:
     lyalpha = 1215.67*(1+redshift)#calc lya using redshift #metadata
-    gclyalpha = 1215.67*(1+clusterredshift) #metadata
     lyalphaind = findval(wlen,lyalpha) #metadata
-
+    gclyalpha = 1215.67*(1+clusterredshift) #metadata
+    gclyalphaind = findval(wlen,gclyalpha) #metdata
 
     #s/n checking
     std = (1/ivar)**0.5
@@ -125,15 +130,15 @@ for spec in specnames:
     #--------------------Continuum fitting-----------------------#
 
     #split the spec in two about lyalpha peak for 2 fitting regions
-    pw = 0
+    pw = 30
     intervalwlen = np.array([])
     winpeak = np.array([])
     forestwinnum, forestpct = 8, 0.2 #forest number must be even #metadata
     otherwinnum, otherpct =  50, 0.2 #metadata
 
     #fitv9 method
-    if lyalpha - wlen[0] <= pw: #if no forest just fit the other part of the spectrum
-        stackstatus = 'foresterror' #metadata
+    if lyalpha - wlen[0] <= 0: #if no forest just fit the other part of the spectrum
+        stackstatus = 'FORESTERROR' #metadata
         step = 0
         while step <= speclen:
             window = int((speclen-lyalphaind)/otherwinnum)
@@ -145,12 +150,14 @@ for spec in specnames:
             intervalwlen = np.append(intervalwlen,wlen[winpeakind])
             step = step + window
     else: #for good spec fit accordingly
-        stackstatus = 'success' #metadata
+        stackstatus = 'SUCCESS' #metadata
         step = 0
         while step <= speclen:
-            if step <= lyalphaind:
+            if step <= lyalphaind :
                 winnum = forestwinnum
                 window = int(lyalphaind/winnum)
+                # if window < lyalphaind:
+                #     window = int((speclen-lyalphaind)/otherwinnum)
                 percentage = forestpct
                 pct = int(window*percentage)
                 windata = flux[step:(step+window)]
@@ -172,15 +179,43 @@ for spec in specnames:
         #pad interval with start/end value to allign correctly
         intervalwlen[0] = wlen[0]
         intervalwlen[-1] = wlen[-1]
-
         intpol = interpolate.interp1d(intervalwlen, winpeak, kind=1)
         contfit = intpol(wlen)
         #smooth fit
-        smoothwin = 2*int(lyalphaind/forestwinnum)+1 #ensures smooth window is odd number
+        if stackstatus == 'SUCCESS':
+            smoothwin = 2*int(lyalphaind/forestwinnum)+1 #ensures smooth window is odd number
+        else:
+            smoothwin = 2*int((speclen-lyalphaind)/otherwinnum)+1 #ensures smooth window is odd number
 
         contfit = signal.savgol_filter(contfit, smoothwin,3)
         normspec = flux-contfit
 
+        wlencol = fits.Column(name='Wavelength', array=wlen, format='F')
+        normspeccol = fits.Column(name='Normalised_Flux', array=normspec, format='F')
+
+        specfitdata = fits.BinTableHDU.from_columns([wlencol, normspeccol])
+
+        redshiftcol = fits.Column(name='QSO_Z', array=np.array([redshift]), format='F')
+        stonallcol = fits.Column(name='STON_ALL', array=np.array([stonall]), format='F')
+        stonforestcol = fits.Column(name='STON_FOREST', array=np.array([stonforest]), format='F')
+        lyalphacol = fits.Column(name='QSO_LYa', array=np.array([lyalpha]), format='F')
+        lyalphaindcol = fits.Column(name='QSO_LYa_INDEX', array=np.array([lyalphaind]), format='K')
+        gcnamecol = fits.Column(name='GC_NAME', array=np.array([clusternames]), format='20A')
+        gcredshiftcol = fits.Column(name='GC_Z', array=np.array([clusterredshift]), format='F')
+        gc_qso_sepcol = fits.Column(name='GC_SEPERATION', array=np.array([clusterseperation]), format='F')
+        gclyalphacol = fits.Column(name='GC_LYa', array=np.array([gclyalpha]), format='F')
+        gclyalphaindcol = fits.Column(name='GC_LYa_INDEX', array=np.array([gclyalphaind]), format='K')
+        stackmsgcol = fits.Column(name='STACK_STATUS', array=np.array([stackstatus]), format='20A')
+
+        metadata = fits.BinTableHDU.from_columns([redshiftcol, stonallcol, stonforestcol, lyalphacol,
+        lyalphaindcol, gcnamecol, gcredshiftcol, gc_qso_sepcol, gclyalphacol, gclyalphaindcol, stackmsgcol])
+
+        primary = fits.PrimaryHDU()
+        hdul = fits.HDUList([primary, specfitdata, metadata])
+
+        hdul.writeto('Fitted Spectra/' + spec[0:20] + '-prefitted.fits',overwrite = True)
+
+        counter = counter + 1
         #plotting:
         # wlim = speclen
         # plt.figure(spec[:20]+'fitting')
@@ -199,7 +234,14 @@ for spec in specnames:
         # plt.legend()
         # plt.show()
 
-    print('done '+spec)
+
+    pctcomplete =100*(counter/spectot)
+    pctrange = np.arange(0,101,1)
+    pctrange[0] = 1
+
+    if pctcomplete >= pctrange[pctind]:
+        print(str(pctcomplete)+'% complete')
+        i = i + 1
 
 
 
