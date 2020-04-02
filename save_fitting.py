@@ -14,22 +14,21 @@ specnames = next(os.walk('Spectra'))[2]
 stonlim = 1
 
 for spec in specnames:
-    specdirectory = 'Spectra/'+spec
-    spec = [spec]
-    wlen, normspec, wlenlineind, redshift,stackstatus = fitmeth.contfitv7(spec, stonlim, showplot = False, showerror = False)
+    if spec[-4:] == 'fits':
+        specdirectory = 'Spectra/' + spec
+        spec = [spec]
+        wlen, normspec, redshift, stackstatus = fitmeth.contfitv7(spec, stonlim, showplot = False, showerror = False)
+        spec = str(spec)
 
-    # out = open("fitted",'a')
-    # print(specdirectory, wlen, normspec, wlenlineind, redshift,file=out)
-    # out.close()
-    # print(spec)
-    # fits.writeto(spec, wlen, header=wlen.header_model, clobber=False)
-    # fits.writeto(spec, normspec, header=normspec.header_model, clobber=False)
-    # fits.writeto(spec, wlenlineind, header=wlenlineind.header_model, clobber=False)
-    # fits.writeto(spec, redshift, header=redshift.header_model, clobber=False)
 
-    c1 = fits.Column(name='Wavelength', array=wlen, format='K')
-    c2 = fits.Column(name='Flux', array=normspec, format='K')
-    c3 = fits.Column(name='Wavelength Index', array=wlenlineind, format='K')
-    c4 = fits.Column(name='Spectra Redshift', array=redshift, format='K')
-    t = fits.BinTableHDU.from_columns([c1, c2, c3])
-    t.writeto('prefitted.fits')
+        c1 = fits.Column(name='Wavelength', array=wlen, format='K')
+        c2 = fits.Column(name='Flux', array=normspec, format='K')
+        c4 = fits.Column(name='Spectra Redshift', array=redshift, format='K')
+        t = fits.BinTableHDU.from_columns([c1, c2])
+        # different headers
+        meta = fits.BinTableHDU.from_columns(c4)
+        # forest s/n save
+        hdul = fits.HDUList([t,meta])
+        #
+        hdul.writeto('Fitted Spectra/' + spec[2:22] + '-prefitted.fits',overwrite = True)
+        # fits.writeto(hdul,'Fitted Spectra/' + spec[2:22] + '-prefitted.fits',overwrite = True)

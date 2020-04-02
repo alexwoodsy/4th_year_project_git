@@ -62,12 +62,12 @@ for i in range(0,carlalen):
 
 
 #####----STACKING---#####
-clusterstack = np.zeros(1000000)
+clusterstack = []
 clusterhighres = np.linspace(0, 6000, 1000000)
 clustermin = 10000
 clustermax = 0
 #get spec names for a carla target - do stacking
-for carlaselect in range(0,2):
+for carlaselect in range(0,1):
     specmatch = []
     for i in range(0,poslen): #CHNAGE
         if clusternames[i] == match[carlaselect] and specnames[i][-4:] == 'fits':
@@ -81,7 +81,7 @@ for carlaselect in range(0,2):
     specmatch = specmatch#[0:20]
     #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
 
-    normspeckstack = np.zeros(1000000)
+    normspeckstack = []
     wlenhighres = np.linspace(0, 6000, 1000000)
     wlenmin = 10000
     wlenmax = 0
@@ -94,16 +94,18 @@ for carlaselect in range(0,2):
             wlenmin = wlenshift[0]
         if wlenshift[-1] > wlenmax:
             wlenmax = wlenshift[-1]
-        normspechighres = wlenintpol(wlenhighres)
-        normspeckstack = normspeckstack + normspechighres
-        # normspecmed.append(normspechighres)
 
+        normspechighres = wlenintpol(wlenhighres)
+        # print(normspeckstack)
+        normspeckstack = np.append(normspeckstack,normspechighres,axis=0)
+        # normspecmed.append(normspechighres)
+        # print(np.max(normspeckstack))
         # plt.figure('Unstacked Spectra')
         plt.plot(wlenshift, normspec)
         plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
         plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
     print('stacking done for ' + match[carlaselect])
-    clusterstack = clusterstack + normspeckstack
+    clusterstack = np.append(clusterstack,normspeckstack,axis=0)
     # clustermed.append(normspecmed)
     if wlenmin < clustermin:
         clustermin = wlenmin
@@ -111,17 +113,21 @@ for carlaselect in range(0,2):
         clustermax = wlenmax
     # normspeckavg = normspeckstack/len(specmatch)
     # cut extra zeropadding
+# print(clusterstack)
+clustermed = np.median(normspeckstack,axis=0)
+print(clustermed)
+
 clustermax = 1600
 # clusterstack = np.median(clustermed)
 start = (np.abs(clusterhighres - clustermin)).argmin()
 end = (np.abs(clusterhighres - clustermax)).argmin()
 clusterhighres = clusterhighres[start:end]
-clusterstack = clusterstack[start:end]
+clustermed = clustermed[start:end]
 
 #downsample stacked specind
 # dsrange = np.linspace(clusterhighres[0], clusterhighres[-1],5000)
 dsrange = np.linspace(clusterhighres[0],clusterhighres[-1],5000)
-dsnormspewcstack = signal.resample(clusterstack, 5000)
+dsnormspewcstack = signal.resample(clustermed, 5000)
 
 plt.figure('Stacked Spectra')
 plt.plot(dsrange, dsnormspewcstack)

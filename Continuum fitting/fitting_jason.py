@@ -217,7 +217,7 @@ def contfitv7(specsample,stonlim,showplot,showerror):
     #total errors and total stacked
 
 
-    return wlen, normspec, wlenlineind, redshift, stackstatus
+    return wlen, normspec, redshift, stackstatus
 
 
 
