@@ -8,8 +8,21 @@ import os
 import sys
 sys.path.append('C:/Users/jason/GIT/4th_year_project_git/Continuum Fitting')
 
-specdirectory = 'Fitted Spectra/spec-0411-51817-0290-prefitted.fits'
+# specdirectory = 'Spectra/spec-0411-51817-0290.fits'
+#
+# data = fits.getdata(specdirectory,ext=2)
+#
+# print(data)
 
-data = fits.getdata(specdirectory,ext=0)
+n = np.ones([1,3])
 
-print(data)
+
+for i in range(0,4):
+    n2 = np.zeros([i,3])
+    # print(n)
+
+    n = np.append(n,n2,axis=0)
+    print(n)
+
+m = np.median(n,axis=0)
+print(m)

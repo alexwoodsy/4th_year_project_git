@@ -19,16 +19,21 @@ for spec in specnames:
         spec = [spec]
         wlen, normspec, redshift, stackstatus = fitmeth.contfitv7(spec, stonlim, showplot = False, showerror = False)
         spec = str(spec)
-
-
+        # print(redshift)
+        # print(type(redshift))
+        
+        # need to convert all objects to arrays for .fits writing
         c1 = fits.Column(name='Wavelength', array=wlen, format='K')
         c2 = fits.Column(name='Flux', array=normspec, format='K')
-        c4 = fits.Column(name='Spectra Redshift', array=redshift, format='K')
+        c4 = fits.Column(name='Spectra Redshift', array=redshift, format='F')
+        # format = 'F' for float objects
+
         t = fits.BinTableHDU.from_columns([c1, c2])
+        meta = fits.BinTableHDU.from_columns([c4])
         # different headers
-        meta = fits.BinTableHDU.from_columns(c4)
+        primary = fits.PrimaryHDU()
         # forest s/n save
-        hdul = fits.HDUList([t,meta])
+        hdul = fits.HDUList([primary,t,meta])
         #
         hdul.writeto('Fitted Spectra/' + spec[2:22] + '-prefitted.fits',overwrite = True)
         # fits.writeto(hdul,'Fitted Spectra/' + spec[2:22] + '-prefitted.fits',overwrite = True)
