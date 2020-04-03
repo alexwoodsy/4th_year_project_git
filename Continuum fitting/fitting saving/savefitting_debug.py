@@ -14,27 +14,25 @@ sys.path.append('C:/Users/alexw/Documents/GitHub/4th_year_project_git/Continuum 
 specnames = next(os.walk('Fitted Spectra'))[2]
 spectot = len(specnames)
 
+nullerror = []
+count = 0
 for spec in specnames:
     specdirectory = 'Fitted Spectra/'+spec
-
-    data = fits.getdata(specdirectory,ext=1)
-    speclen = len(data)
     fitdata = fits.getdata(specdirectory,ext=2)#read in fits meta data
-    print(fitdata[0])
-    metasize = len(fitdata[0])
-    #predefine data variables
-    flux = np.zeros(speclen)
-    wlen = np.zeros(speclen)
+    redshift= fitdata[0][0]
+    stonall = fitdata[0][1]
+    stonforest = fitdata[0][2]
+    lyalpha = fitdata[0][3]
+    lyalphaind = fitdata[0][4]
+    gcname = fitdata[0][5]
+    gcredshift = fitdata[0][6]
+    gc_qso_sep = fitdata[0][7]
+    gclyalpha = fitdata[0][8]
+    gclyalphaind = fitdata[0][9]
+    stackmsg = fitdata[0][10]
 
-    #extract metadata
-    for i in range(0,speclen):
-        flux[i] = data[i][1]
-        wlen[i] = (data[i][0])
-
-    #plotting:
-    wlim = speclen
-    plt.figure('fitting')
-    plt.plot(wlen[0:wlim],flux[0:wlim],label='spec')
-    plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-    plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-    plt.show()
+    if gcname == 'null':
+        count = count + 1
+        print('found ' + str(count))
+        nullerror.append(spec)
+print(nullerror)
