@@ -71,7 +71,7 @@ gcwlenmax = 0
 
 specstacktot = 0
 
-for carlaselect in range(0,10): #all change to - matchlen
+for carlaselect in range(0,3): #all change to - matchlen
     print('processing '+ match[carlaselect])
 
     specmatch = []
