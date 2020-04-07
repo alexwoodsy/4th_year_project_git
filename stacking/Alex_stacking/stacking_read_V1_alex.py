@@ -17,16 +17,15 @@ specnames = next(os.walk('Fitted Spectra'))[2]
 spectot = len(specnames)
 
 
+######carla stuff
 #set up sample to be looped over
 #read in data linking cluster to qso's
 posdata = fits.getdata('PositionsTable.fits',ext=1)
 poslen = len(posdata)
-clusterredshift = np.zeros(poslen)
+
 clusternames = np.zeros(poslen).astype(str)
 specfilename = np.zeros(poslen).astype(str)
-
-specmatch = []
-gcname = ''
+specfilenamefitted = np.zeros(poslen).astype(str)
 for j in range(0,poslen):
     #get cluster info
     clusternames[j] = str(posdata[j][105])
@@ -34,7 +33,28 @@ for j in range(0,poslen):
     plate = str(posdata[j][4]).zfill(4)
     mjd = str(posdata[j][5]).zfill(5)
     fiberid = str(posdata[j][6]).zfill(4)
-    specfilenames[j] = 'spec-'+plate+'-'+mjd+'-'+fiberid+'-prefitted.fits'
+    specfilename[j] = 'spec-'+plate+'-'+mjd+'-'+fiberid+'.fits'
+    specfilenamefitted[j] = 'spec-'+plate+'-'+mjd+'-'+fiberid
+
+#read in carla
+carladata = fits.getdata('CARLA/CARLA_table_Aug_2013.fits',ext=1)
+carlalen = len(carladata)
+carlanames = np.zeros(carlalen).astype(str)
+
+for i in range(0,carlalen):
+    carlanames[i] = str(carladata[i][0])
+
+
+#select carla agn that were selected in filtering (in pos table) and associated spec index in table
+carlamatch =  []
+
+for i in range(0,carlalen):
+    c = 0
+    for k in range(0,poslen):
+        if carlanames[i] == clusternames[k]:
+            c = c + 1
+    if c > 1:
+        carlamatch.append(carlanames[i])
 
 
 #####----STACKING---#####
@@ -50,15 +70,13 @@ gcwlenmax = 0
 specstacktot = 0
 
 for carlaselect in range(0,1): #all change to - matchlen
-    print('processing '+ match[carlaselect])
-
-    specmatch = []
+    print('processing '+ carlamatch[carlaselect])
+    #get carla spectra to loop over
+    specmatchfitted =[]
     for i in range(0,poslen): #CHNAGE
-        if clusternames[i] == match[carlaselect]:
-            specmatch.append(specnames[i])
-
-    #specmatch = specmatch[0:5]
-    #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
+        if clusternames[i] == carlamatch[carlaselect]:
+            output = specfilenamefitted[i]+'-prefitted.fits'
+            specmatchfitted.append(output)
 
     normspeckstack = np.zeros(50000)
     wlenhighres = np.linspace(0, 6000, 50000)
@@ -67,12 +85,9 @@ for carlaselect in range(0,1): #all change to - matchlen
     stackstatus = []
 
     #debugging parameters:
-    showerror = False
+    showerror = True
     showplot = False
-
-    for spec in specmatch:
-
-        #wlen, normspec, wlenlineind, redshift, stackcode <---need to get
+    for spec in specmatchfitted:
         specdirectory = 'Fitted Spectra/'+spec
         data = fits.getdata(specdirectory,ext=1)
         speclen = len(data)
@@ -96,8 +111,8 @@ for carlaselect in range(0,1): #all change to - matchlen
         gclyalpha = fitdata[0][8]
         gclyalphaind = fitdata[0][9]
         stackmsg = fitdata[0][10]
-
         print(spec +' redshift = '+ str(redshift) +' gc = '+ gcname)
+
         #conditions for stacking
         zlims = np.array([gcredshift + 0.5, gcredshift + 2])
         stonlim = 1
@@ -126,30 +141,29 @@ for carlaselect in range(0,1): #all change to - matchlen
             if showerror == True:
                 print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
 
-        stackstatus.append(stackcode)
 
-        wlenshift = wlen/(1+gcredshift)
-        wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=0)
-        if wlenshift[0] < wlenmin:
-            wlenmin = wlenshift[0]
-        if wlenshift[-1] > wlenmax:
-            wlenmax = wlenshift[-1]
-        normspechighres = wlenintpol(wlenhighres)
-        normspeckstack = normspeckstack + normspechighres
+            wlenshift = wlen/(1+gcredshift)
+            wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=0)
+            if wlenshift[0] < wlenmin:
+                wlenmin = wlenshift[0]
+            if wlenshift[-1] > wlenmax:
+                wlenmax = wlenshift[-1]
+            normspechighres = wlenintpol(wlenhighres)
+            normspeckstack = normspeckstack + normspechighres
+            figuretitleunstacked = carlamatch[carlaselect] + '_unstacked'
+            plt.figure(figuretitleunstacked)
+            plt.plot(wlenshift, normspec)
+            plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+            plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
-        figuretitleunstacked = match[carlaselect] + '_unstacked'
-        plt.figure(figuretitleunstacked)
-        plt.plot(wlenshift, normspec)
-        plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-        plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
+    stackstatus.append(stackcode)
     #savepath = 'stacking/figures/'+figuretitleunstacked+'.svg'
     #plt.savefig(savepath)
     #plt.close(figuretitleunstacked)
 
     #output
     print(' ')
-    print('stacking attempted for '+ str(len(stackstatus)) + ' spectra for CARLA: ' + match[carlaselect])
+    print('stacking attempted for '+ str(len(stackstatus)) + ' spectra for CARLA: ' + carlamatch[carlaselect])
 
     stacktot = zerrortot = foresterrortot = stonerrortot = gcerrortot = 0
 
@@ -201,7 +215,7 @@ for carlaselect in range(0,1): #all change to - matchlen
 
     plt.figure('multi-carla stack + uncombined')
     plt.subplot(2, 1, 1)
-    plt.plot(wlenhighres, normspeckstack, label = match[carlaselect] + ' stack of '+str(stacktot) + ' QSO')
+    plt.plot(wlenhighres, normspeckstack, label = carlamatch[carlaselect] + ' stack of '+str(stacktot) + ' QSO')
     plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
     plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
     plt.legend()

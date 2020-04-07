@@ -65,7 +65,6 @@ spectot = len(specnames)
 
 counter = 0
 pctind = 0
-specnames = specnames[0:1]
 for spec in specnames:
 
     #---------------------------data extraction-----------------------------#
