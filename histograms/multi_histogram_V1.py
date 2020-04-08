@@ -40,7 +40,8 @@ for i in range(0,fitlen):
     gclyalphaind[i] = fitdata[i][10]
     stackmsg[i] = fitdata[i][11]
 
-
+ind = (np.argmax(redshift))
+print(specfilename[ind])
 xvar = [stonall,stonforest]
 step = 1
 binning = np.arange(int(np.min(xvar)-step), int(np.max(xvar)+step) , step)

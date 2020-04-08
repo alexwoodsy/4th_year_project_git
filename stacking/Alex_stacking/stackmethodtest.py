@@ -45,24 +45,8 @@ print(len(carlamatchnew))
 
 ###########old method ##############
 
-######carla stuff
-#set up sample to be looped over
-#read in data linking cluster to qso's
-posdata = fits.getdata('PositionsTable.fits',ext=1)
-poslen = len(posdata)
 
-clusternames = np.zeros(poslen).astype(str)
-specfilename = np.zeros(poslen).astype(str)
-specfilenamefitted = np.zeros(poslen).astype(str)
-for j in range(0,poslen):
-    #get cluster info
-    clusternames[j] = str(posdata[j][105])
-    #get assocaited id to find spec in folder
-    plate = str(posdata[j][4]).zfill(4)
-    mjd = str(posdata[j][5]).zfill(5)
-    fiberid = str(posdata[j][6]).zfill(4)
-    specfilename[j] = 'spec-'+plate+'-'+mjd+'-'+fiberid+'.fits'
-    specfilenamefitted[j] = 'spec-'+plate+'-'+mjd+'-'+fiberid
+
 
 #read in carla
 carladata = fits.getdata('CARLA/CARLA_table_Aug_2013.fits',ext=1)
@@ -72,17 +56,18 @@ carlanames = np.zeros(carlalen).astype(str)
 for i in range(0,carlalen):
     carlanames[i] = str(carladata[i][0])
 
-
 #select carla agn that were selected in filtering (in pos table) and associated spec index in table
 carlamatch =  []
 
 for i in range(0,carlalen):
     c = 0
-    for k in range(0,poslen):
-        if carlanames[i] == clusternames[k]:
+    for k in range(0,fitlen):
+        if carlanames[i] == metagcname[k]:
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames[i])
+
+
 print(carlamatch)
 print(len(carlamatch))
 

@@ -21,6 +21,9 @@ oldspectot = len(specnames)
 nullerror = [] ###135 null error
 count = 0
 for spec in specnames:
+    if len(spec) != 35: #standard length == 35 hence anything more == spec in 2 clusters
+        print(spec[21:-16])
+        
     fitdata = fits.getdata('Fitted Spectra/'+spec, ext=2)
     redshift= fitdata[0][0]
     stonall = fitdata[0][1]
@@ -34,13 +37,13 @@ for spec in specnames:
     gclyalphaind = fitdata[0][9]
     stackmsg = fitdata[0][10]
 
-    if gcname == 'null':
-        count = count + 1
-        #print('found ' + str(count))
-        nullerror.append(spec)
-
-print(count)
-print(nullerror)
+#     if gcname == 'null':
+#         count = count + 1
+#         #print('found ' + str(count))
+#         nullerror.append(spec)
+#
+# print(count)
+# print(nullerror)
 
 #delete old null error files
 
@@ -104,20 +107,20 @@ print(nullerror)
 #         specmatchfitted.append(output)
 ################
 
-
-count = 0
-notfound = []
-
-for specold in oldspecnames:
-    count = 0
-    for spec in specnames:
-        if specold[:-5] == spec[:-15]:
-            count = count + 1
-    if count == 0:
-        notfound.append(specold)
-
-###185 not in spec folder
-print(notfound)
+#
+# count = 0
+# notfound = []
+#
+# for specold in oldspecnames:
+#     count = 0
+#     for spec in specnames:
+#         if specold[:-5] == spec[:-15]:
+#             count = count + 1
+#     if count == 0:
+#         notfound.append(specold)
+#
+# ###185 not in spec folder
+# print(notfound)
 
 
 
