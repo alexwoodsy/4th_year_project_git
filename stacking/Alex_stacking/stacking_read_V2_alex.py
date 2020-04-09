@@ -71,7 +71,7 @@ gcwlenmax = 0
 
 specstacktot = 0 #total number of spectra stacked in all carla
 carlatot = 0
-carlarange = np.arange(0,len(carlamatch))
+carlarange = np.arange(0,100)
 
 for carlaselect in carlarange: #all change to - matchlen
     print('processing '+ carlamatch[carlaselect]+ ' ('+str(carlaselect)+'/'+str(len(carlarange))+')')
@@ -204,9 +204,9 @@ for carlaselect in carlarange: #all change to - matchlen
             wlenhighres = wlenhighres[start:end]
             normspeckstack = normspeckstack[start:end]
 
-            pltrange = np.arange(0,2800)
+
             plt.figure('multi-carla stack + uncombined')
-            plt.plot(wlenhighres[pltrange], normspeckstack[pltrange], label = carlamatch[carlaselect] + ' stack of '+str(stacktot) + ' QSO')
+            plt.plot(wlenhighres[:-300], normspeckstack[:-300], label = carlamatch[carlaselect] + ' stack of '+str(stacktot) + ' QSO')
             plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
             plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
@@ -227,7 +227,7 @@ wlenmultistack = wlenmultistack[gcstart:gcend]
 multistack = multistack[gcstart:gcend]
 
 
-meanstack = (multistack[pltrange]/1)
+meanstack = multistack/specstacktot
 #normstack = meanstack/np.max(abs(meanstack))
 
 #plot line in unstacked graph
@@ -236,7 +236,7 @@ plt.plot(np.array([(1215.67),(1215.67)]),np.array([150,-150]),'--')
 plt.text(1215.67, 150, r' Ly$\alpha$ absorbtion for '+ str(carlatot) +' carla with '+ str(specstacktot) +' spectra')
 
 plt.figure('stacked clusters')
-plt.plot(wlenmultistack[pltrange], meanstack[pltrange])
+plt.plot(wlenmultistack[:-300], meanstack[:-300])
 plt.plot(np.array([(1215.67),(1215.67)]),np.array([np.min(meanstack),np.max(meanstack)]),'--')
 plt.text(1215.67, np.min(meanstack), r' Ly$\alpha$ absorbtion for multi-carla stack with '+ str(specstacktot) +' spectra')
 plt.xlabel(r' $\lambda$ ($\mathrm{\AA}$)')
