@@ -7,11 +7,11 @@ import os, time
 #import fitting
 import sys
 
-sys.path.append('C:/Users/jason/GIT/4th_year_project_git/Continuum Fitting')
+# sys.path.append('C:/Users/jason/GIT/4th_year_project_git/Continuum Fitting')
 
 # sys.path.append('C:/Users/alexw/Documents/GitHub/4th_year_project_git/Continuum fitting')
 #path for other pc sys.path.append('C:/Users/alexw/OneDrive/Documents/University work/4th year work/Main project/4th_year_project_git/Continuum fitting')
-import fitting_v9 as fitmeth
+# import fitting_v9 as fitmeth
 
 plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 #imports the  FITTED spectra from the spectra folder
@@ -21,11 +21,11 @@ spectot = len(specnames)
 
 #set up sample to be looped over
 #read in data linking cluster to qso's
-posdata = fits.getdata('PositionsTable.fits',ext=1)
-poslen = len(posdata)
-clusterredshift = np.zeros(poslen)
-clusternames = np.zeros(poslen).astype(str)
-specfilename = np.zeros(poslen).astype(str)
+# posdata = fits.getdata('PositionsTable.fits',ext=1)
+# poslen = len(posdata)
+# clusterredshift = np.zeros(poslen)
+# clusternames = np.zeros(poslen).astype(str)
+# specfilename = np.zeros(poslen).astype(str)
 
 specmatch = []
 gcname = ''
@@ -62,7 +62,7 @@ specstacktot = 0
     #specmatch = specmatch[0:5]
     #specmatch = ['spec-0343-51692-0145.fits','spec-0435-51882-0637.fits','spec-2947-54533-0417.fits','spec-3970-55591-0148.fits']
 
-normspeckstack = np.zeros(50000)
+normspeckstack = np.zeros([40,50000])
 wlenhighres = np.linspace(0, 10000, 50000)
 wlenmin = 10000
 wlenmax = 0
@@ -71,8 +71,9 @@ stackstatus = []
 #debugging parameters:
 showerror = False
 showplot = False
+count = int(0)
 
-specnames = specnames[0:1000]
+specnames = specnames[0:40]
 
 for spec in specnames:
 
@@ -104,7 +105,7 @@ for spec in specnames:
 
     # print(spec +' redshift = '+ str(gcredshift) +' gc = '+ gcname)
     #conditions for stacking
-    zlims = np.array([gcredshift + 0.5, gcredshift + 2])
+    zlims = np.array([gcredshift + 0.2, gcredshift + 6])
     stonlim = 1
     pw = 0
 
@@ -140,7 +141,11 @@ for spec in specnames:
             wlenmax = wlenshift[-1]
         normspechighres = wlenintpol(wlenhighres)
         # print(normspechighres)
-        normspeckstack = normspeckstack + normspechighres
+        # normspeckstack = normspeckstack + normspechighres
+        # normspeckstack = np.append(normspeckstack,normspechighres,axis=0)
+        # print(type(count))
+
+        normspeckstack[count, 0:] = normspechighres
 
         # figuretitleunstacked = match[carlaselect] + '_unstacked'
 
@@ -148,6 +153,9 @@ for spec in specnames:
         plt.plot(wlenshift, normspec)
         plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
         plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+
+        count=+1
+        # print(count)
     stackstatus.append(stackcode)
     #savepath = 'stacking/figures/'+figuretitleunstacked+'.svg'
     #plt.savefig(savepath)
@@ -182,20 +190,24 @@ specstacktot = specstacktot + stacktot
 
     #stacking data:
     #cut extra zeropadding
+# print(np.max(normspeckstack))
+normspecmed = np.median(normspeckstack,axis=1)
+print(len(normspecmed))
+
 start = (np.abs(wlenhighres - wlenmin)).argmin()
 end = (np.abs(wlenhighres - wlenmax)).argmin()
 wlenhighres = wlenhighres[start:end]
-normspeckstack = normspeckstack[start:end]
+normspecmed = normspecmed[start:end]
 
-
+print(len(normspecmed))
 # figuretitle = match[carlaselect] + '_stacked'
 plt.figure('figuretitle')
-plt.plot(wlenhighres, normspeckstack)
+plt.plot(wlenhighres, normspecmed)
 plt.xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
 plt.ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 # string = match[carlaselect] + ' z = '+ str(gcredshift) + r' Ly$\alpha$ absorbtion'
 # plt.text((1215.67), np.max(normspeckstack), string)
-plt.plot(np.array([(1215.67),(1215.67)]),np.array([np.min(normspeckstack),np.max(normspeckstack)]),'--')
+plt.plot(np.array([(1215.67),(1215.67)]),np.array([np.min(normspecmed),np.max(normspecmed)]),'--')
 
 #savepath = 'stacking/figures/'+figuretitle+'.svg'
 #plt.savefig(savepath)
