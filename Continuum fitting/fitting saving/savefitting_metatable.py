@@ -45,7 +45,7 @@ for spec in specnames:
     gclyalphaind = np.append(gclyalphaind, fitdata[0][9])
     stackmsg = np.append(stackmsg, fitdata[0][10])
 
-print(maxlenspecname)
+
 #put in from_columns
 #specfilenamecol = fits.Column(name='SPEC_FILE_NAME', array=np.array([specnames]), format='20A')
 specfilenamecol = fits.Column(name='SPEC_FILE_NAME', array = specfilename, format=str(maxlenspecname)+'A')

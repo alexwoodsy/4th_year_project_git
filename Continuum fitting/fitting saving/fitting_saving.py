@@ -63,8 +63,7 @@ spectot = len(specnames)
 #add indexing for spectra in file to allow loop over all
 #specnames = [specnames[0],specnames[1000]]
 
-counter = 0
-pctind = 0
+
 for spec in specnames:
 
     #---------------------------data extraction-----------------------------#
@@ -218,7 +217,6 @@ for spec in specnames:
 
         hdul.writeto('Fitted Spectra/' + spec[0:20] + '-prefitted.fits',overwrite = True)
 
-        counter = counter + 1
         #plotting:
         # wlim = speclen
         # plt.figure(spec[:20]+'fitting')
@@ -237,14 +235,6 @@ for spec in specnames:
         # plt.legend()
         # plt.show()
 
-
-    pctcomplete =100*(counter/spectot)
-    pctrange = np.arange(0,101,1)
-    pctrange[0] = 1
-
-    if pctcomplete >= pctrange[pctind]:
-        print(str(pctcomplete)+'% complete')
-        pctindi = pctind + 1
 
 
 
