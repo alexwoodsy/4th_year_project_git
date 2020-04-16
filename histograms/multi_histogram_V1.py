@@ -5,7 +5,7 @@ from astropy.io import fits
 from scipy import interpolate
 import os
 
-#plt.style.use('mystylehistogram')
+plt.style.use('mystylehistogram')
 
 
 specdirectory = 'metatable.fits'
@@ -41,18 +41,38 @@ for i in range(0,fitlen):
     stackmsg[i] = fitdata[i][11]
 
 ind = (np.argmax(redshift))
-print(specfilename[ind])
+
+plt.figure('s/n hist')
 xvar = [stonall,stonforest]
 step = 1
-binning = np.arange(int(np.min(xvar)-step), int(np.max(xvar)+step) , step)
-labelnames = [r'$(S/N_{spectrum})$', r'$(S/N_{Ly\alpha forest})$']
+binning = np.arange(int(np.min(xvar)), int(np.max(xvar)+step) , step)
+labelnames = [r'Spectrum Range', r'Ly$\alpha$ forest']
 n, bins, patches = plt.hist(x = xvar, bins = binning, log = True, alpha=1, rwidth = 1, histtype = 'bar', label = labelnames)
 
 #plt.grid(axis='y', alpha=0.4)
-plt.xlabel(r'(S/N)$')
+plt.xlabel(r'$(S/N)$')
 plt.xticks(binning)
-plt.ylabel('N')
+plt.ylabel(r'$N_{QSO}$')
 plt.legend()
+
+plt.figure('rad hist')
+xvar = gc_qso_sep
+step = 50
+print(np.min(xvar))
+print(np.max(xvar))
+binning = np.arange(int(np.min(xvar)), int(np.max(xvar)+step) , step)
+labelnames = [r'$R_{\perp}$']
+n, bins, patches = plt.hist(x = xvar, bins = binning, log = True, alpha=1, rwidth = 0.9, histtype = 'bar', label = labelnames)
+
+#plt.grid(axis='y', alpha=0.4)
+plt.xlabel(r'$R_{\perp}$ (arcseconds)')
+tickrange = np.arange(int(np.min(xvar)), int(np.max(xvar)+step) , step*4)
+plt.xticks(tickrange)
+plt.ylabel(r'$N_{QSO}$')
+plt.legend()
+
+
+
 plt.show()
 
 

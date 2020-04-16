@@ -66,7 +66,7 @@ for i in range(0,carlalen):
     carlanames = str(carladata[i][0])
     overdensity[i] = carladata[i][6]
     for k in range(0,fitlen):
-        if carlanames == metagcname[k]:# and overdensity[10]== overdensity[i]: #add conditional for overdendity etc.. here
+        if carlanames == metagcname[k] and overdensity[i] > 3: #add conditional for overdendity etc.. here
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames)
@@ -75,7 +75,7 @@ for i in range(0,carlalen):
 specstacktot = 0 #total number of spectra stacked in all carla
 
 carlamatchlen = len(carlamatch)
-carlarange = np.arange(0,carlamatchlen-150)
+carlarange = np.arange(0,carlamatchlen)
 #variables for stacking carla together
 carlahighreslen = 100000
 wlenmultistack = np.linspace(500, 4000, carlahighreslen)
@@ -145,9 +145,9 @@ for carlaselect in carlarange: #all change to - matchlen
 
 
             #conditions for stacking
-            zlims = np.array([gcredshift + 0.1, gcredshift + 5])
+            zlims = np.array([gcredshift+0.1 , gcredshift + 5])
             stonlim = 1
-            rbins = np.array([0, 500])
+            rbins = np.array([0, 4000])
             pw = 0
             #check fit can be added to stack:
             if gc_qso_sep < rbins[0] or gc_qso_sep > rbins[1]:
@@ -286,8 +286,6 @@ medcarla = np.median(medmultistore, axis=0)
 def guassian(x, amp, mean, std):
     return amp*np.exp(-((x-mean)**2)/(2*(std)**2))
 
-
-
 fig0, ax = plt.subplots(2,1,num='Absorption line fitting')
 
 abslineind = findval(wlenmultistack, 1215.67)
@@ -309,6 +307,12 @@ ax[1].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp
 ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
 ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 ax[1].legend()
+
+plt.figure()
+x = np.arange(0, 10, 0.01)
+v1 = models.Voigt1D(x_0=5, amplitude_L=10, fwhm_L=0.5, fwhm_G=0.9)
+plt.plot(x, v1(x))
+
 
 
 #plotting output
