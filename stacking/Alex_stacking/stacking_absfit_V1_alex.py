@@ -61,19 +61,37 @@ carlalen = len(carladata)
 carlanames = np.zeros(carlalen).astype(str)
 overdensity = np.zeros(carlalen)
 carlamatch =  []
+carlaconfirmed = 1
 for i in range(0,carlalen):
     c = 0
     carlanames = str(carladata[i][0])
     overdensity[i] = carladata[i][6]
     for k in range(0,fitlen):
-        if carlanames == metagcname[k] and overdensity[i] > 3: #add conditional for overdendity etc.. here
+        if carlanames ==  metagcname[k]: #'J080016.10+402955.6':#and overdensity[i] > 3: #add conditional for overdendity etc.. here
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames)
 
+##### TEST SAMPLE OF CONFIRMED GCS AROUND CARLA targets
+
+gcconf = ['J0116-2052' , 'J0800+4029','J0958−2904' ,'J1017+6116' ,'J1018+0530','J1052+0806',
+'J1103+3449' ,'J1129+0951' ,'J1131−2705' ,'J1300+4009' ,'J1358+5752' ,'J1510+5958' ,
+'J1753+6310' ,'J2039−2514' ,'J2227−2705' ,'J2355−0002']
+
+gcconfmatch = []
+for i in range(0,len(gcconf)):
+    sample = str(gcconf[i])
+    for testmatch in carlamatch:
+        trim = testmatch[0:5]
+        if trim == sample[0:5]:
+            gcconfmatch.append(testmatch)
+print(gcconfmatch)
+carlamatch = gcconfmatch #select just this subsample
+
+########################################################
+
 
 specstacktot = 0 #total number of spectra stacked in all carla
-
 carlamatchlen = len(carlamatch)
 carlarange = np.arange(0,carlamatchlen)
 #variables for stacking carla together
@@ -289,11 +307,14 @@ def guassian(x, amp, mean, std):
 fig0, ax = plt.subplots(2,1,num='Absorption line fitting')
 
 abslineind = findval(wlenmultistack, 1215.67)
-datarange = np.arange(abslineind - 15, abslineind + 15)
+datarange = np.arange(abslineind - 12, abslineind + 15)
+plotrange = np.arange(abslineind - 50, abslineind + 50)
 absflux = meancarla[datarange]
 abswlen = wlenmultistack[datarange]
-popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-1,-np.inf],[np.inf,1215.67+1,np.inf]))
-ax[0].plot(abswlen,absflux,'.')
+
+popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
+meanamp, meanmean, meanstd = popt
+ax[0].plot(wlenmultistack[plotrange], meancarla[plotrange])
 ax[0].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
 ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
 ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
@@ -301,22 +322,44 @@ ax[0].legend()
 
 absflux = medcarla[datarange]
 abswlen = wlenmultistack[datarange]
-popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-1,-np.inf],[np.inf,1215.67+1,np.inf]))
-ax[1].plot(abswlen,absflux,'.')
+popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
+medamp,medmean,medstd = popt
+ax[1].plot(wlenmultistack[plotrange], medcarla[plotrange])
 ax[1].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
 ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
 ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 ax[1].legend()
 
-plt.figure()
-x = np.arange(0, 10, 0.01)
-v1 = models.Voigt1D(x_0=5, amplitude_L=10, fwhm_L=0.5, fwhm_G=0.9)
-plt.plot(x, v1(x))
+#plot relative vel graph and find delv of line from rest gc ly alpha
+fig1, ax = plt.subplots(2,1,num='velocity Absorption line plot')
+c = 299792.458
+lam = wlenmultistack
+lam_em = 1215.67
+vrel = c*((lam  - lam_em)/lam_em)
+
+abslineind = findval(vrel, 0)
+plotrange = np.arange(abslineind - 50, abslineind + 50)
+
+ax[0].plot(vrel, meancarla)
+ax[0].set_xlabel(r'$\delta$v ($kms^{-1})$')
+ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+ax[0].legend()
+
+ax[1].plot(vrel, medcarla)
+ax[1].set_xlabel(r'$\delta$v ($kms^{-1}$)')
+ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+ax[1].legend()
+
+
+# plt.figure() #voigt profile
+# x = np.arange(0, 10, 0.01)
+# v1 = models.Voigt1D(x_0=5, amplitude_L=10, fwhm_L=0.5, fwhm_G=0.9)
+# plt.plot(x, v1(x))
 
 
 
 #plotting output
-fig1, ax = plt.subplots(2,1,num='multi-carla stack - uncombined')
+fig2, ax = plt.subplots(2,1,num='multi-carla stack - uncombined')
 for c in range(0,carlasucces):
 
     dsrange = np.linspace(wlenmultistack[0], wlenmultistack[-300],5000)
@@ -330,7 +373,7 @@ for c in range(0,carlasucces):
     ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
     ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
-fig2, ax = plt.subplots(2,1,num='('+str(carlasucces)+'/'+str(carlanumber)+ ') stacked clusters')
+fig3, ax = plt.subplots(2,1,num='('+str(carlasucces)+'/'+str(carlanumber)+ ') stacked clusters')
 ax[0].plot(wlenmultistack[:-300], meancarla[:-300])
 ax[0].plot(np.array([(1215.67),(1215.67)]),np.array([np.min(meancarla),np.max(meancarla)]),'--')
 ax[0].text(1215.67, np.min(meancarla), r' Ly$\alpha$ absorbtion for multi-carla stack with '+ str(specstacktot) +' spectra')
