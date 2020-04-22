@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
 from scipy import interpolate, signal
+from scipy.optimize import curve_fit as cf
 import os, time
 #import fitting
 import sys
@@ -11,6 +12,11 @@ sys.path.append('C:/Users/alexw/Documents/GitHub/4th_year_project_git/Continuum 
 #path for other pc sys.path.append('C:/Users/alexw/OneDrive/Documents/University work/4th year work/Main project/4th_year_project_git/Continuum fitting')
 import fitting_v9 as fitmeth
 #plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
+
+def findval(array,val):
+    array = np.asarray(array)
+    ind = np.abs(array - val).argmin()
+    return ind
 
 #imports the  FITTED spectra from the spectra folder
 specnames = next(os.walk('Fitted Spectra'))[2]
@@ -60,7 +66,7 @@ for i in range(0,carlalen):
     carlanames = str(carladata[i][0])
     overdensity[i] = carladata[i][6]
     for k in range(0,fitlen):
-        if carlanames == metagcname[k]:# and overdensity[10]== overdensity[i]: #add conditional for overdendity etc.. here
+        if carlanames == metagcname[k] and overdensity[i] > 3: #add conditional for overdendity etc.. here
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames)
@@ -69,7 +75,7 @@ for i in range(0,carlalen):
 specstacktot = 0 #total number of spectra stacked in all carla
 
 carlamatchlen = len(carlamatch)
-carlarange = np.arange(0,5)
+carlarange = np.arange(0,carlamatchlen)
 #variables for stacking carla together
 carlahighreslen = 100000
 wlenmultistack = np.linspace(500, 4000, carlahighreslen)
@@ -139,12 +145,12 @@ for carlaselect in carlarange: #all change to - matchlen
 
 
             #conditions for stacking
-            zlims = np.array([gcredshift + 0.1, gcredshift + 5])
+            zlims = np.array([gcredshift+0.1 , gcredshift + 5])
             stonlim = 1
-            rbin = 1000
+            rbins = np.array([0, 4000])
             pw = 0
             #check fit can be added to stack:
-            if gc_qso_sep < rbin:
+            if gc_qso_sep < rbins[0] or gc_qso_sep > rbins[1]:
                 stackstatus.append('filtererror')
                 normspecstore[specnumber, 0:] = np.zeros(highreslen)
                 cutinds.append(specnumber)
@@ -275,21 +281,56 @@ medmultistore = medmultistore[0:, gcstart:gcend]
 medcarla = np.median(medmultistore, axis=0)
 
 
-#plt.figure('('+str(carlanumber)+'/'+str(carlafail)+ ') stacked clusters')
+###absorbtion line fitting####
+#fitting needs initial data so extract data about abs line
+def guassian(x, amp, mean, std):
+    return amp*np.exp(-((x-mean)**2)/(2*(std)**2))
+
+fig0, ax = plt.subplots(2,1,num='Absorption line fitting')
+
+abslineind = findval(wlenmultistack, 1215.67)
+datarange = np.arange(abslineind - 15, abslineind + 15)
+absflux = meancarla[datarange]
+abswlen = wlenmultistack[datarange]
+popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-1,-np.inf],[np.inf,1215.67+1,np.inf]))
+ax[0].plot(abswlen,absflux,'.')
+ax[0].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
+ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+ax[0].legend()
+
+absflux = medcarla[datarange]
+abswlen = wlenmultistack[datarange]
+popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-1,-np.inf],[np.inf,1215.67+1,np.inf]))
+ax[1].plot(abswlen,absflux,'.')
+ax[1].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
+ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+ax[1].legend()
+
+plt.figure()
+x = np.arange(0, 10, 0.01)
+v1 = models.Voigt1D(x_0=5, amplitude_L=10, fwhm_L=0.5, fwhm_G=0.9)
+plt.plot(x, v1(x))
+
+
+
+#plotting output
 fig1, ax = plt.subplots(2,1,num='multi-carla stack - uncombined')
 for c in range(0,carlasucces):
-    ax[0].plot(wlenmultistack[:-300], meanmultistore[c, :-300])
+
+    dsrange = np.linspace(wlenmultistack[0], wlenmultistack[-300],5000)
+    dsflux = signal.resample(meanmultistore[c, :-300], 5000)
+    ax[0].plot(dsrange, dsflux)
     ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
     ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
-    ax[1].plot(wlenmultistack[:-300], medmultistore[c, :-300])
+    dsflux = signal.resample(medmultistore[c, :-300], 5000)
+    ax[1].plot(dsrange, dsflux)
     ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
     ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
-
-
-fig2, ax = plt.subplots(2,1)
-fig2.canvas.set_window_title('('+str(carlasucces)+'/'+str(carlanumber)+ ') stacked clusters')
+fig2, ax = plt.subplots(2,1,num='('+str(carlasucces)+'/'+str(carlanumber)+ ') stacked clusters')
 ax[0].plot(wlenmultistack[:-300], meancarla[:-300])
 ax[0].plot(np.array([(1215.67),(1215.67)]),np.array([np.min(meancarla),np.max(meancarla)]),'--')
 ax[0].text(1215.67, np.min(meancarla), r' Ly$\alpha$ absorbtion for multi-carla stack with '+ str(specstacktot) +' spectra')
