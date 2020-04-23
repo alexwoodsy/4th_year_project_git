@@ -73,30 +73,28 @@ for i in range(0,carlalen):
         carlamatch.append(carlanames)
 
 ##### TEST SAMPLE OF CONFIRMED GCS AROUND CARLA targets
-
-gcconf = ['J0116-2052' , 'J0800+4029','J0958−2904' ,'J1017+6116' ,'J1018+0530','J1052+0806',
-'J1103+3449' ,'J1129+0951' ,'J1131−2705' ,'J1300+4009' ,'J1358+5752' ,'J1510+5958' ,
-'J1753+6310' ,'J2039−2514' ,'J2227−2705' ,'J2355−0002']
-
-gcconfmatch = []
-for i in range(0,len(gcconf)):
-    sample = str(gcconf[i])
-    for testmatch in carlamatch:
-        trim = testmatch[0:5]
-        if trim == sample[0:5]:
-            gcconfmatch.append(testmatch)
-print(gcconfmatch)
-carlamatch = gcconfmatch #select just this subsample
+#
+# gcconf = ['J0116-2052' , 'J0800+4029','J0958−2904' ,'J1017+6116' ,'J1018+0530','J1052+0806',
+# 'J1103+3449' ,'J1129+0951' ,'J1131−2705' ,'J1300+4009' ,'J1358+5752' ,'J1510+5958' ,
+# 'J1753+6310' ,'J2039−2514' ,'J2227−2705' ,'J2355−0002']
+#
+# gcconfmatch = []
+# for i in range(0,len(gcconf)):
+#     sample = str(gcconf[i])
+#     for testmatch in carlamatch:
+#         trim = testmatch[0:5]
+#         if trim == sample[0:5]:
+#             gcconfmatch.append(testmatch)
+# print(gcconfmatch)
+# carlamatch = gcconfmatch #select just this subsample
 
 ########################################################
 
 
 #do multiple bin stacks:
-rinterval = 500
-rbins = np.array([2000-rinterval, 2000])
-while rbins[1] < 4000:
-    rbins[0] = rbins[0] + rinterval
-    rbins[1] = rbins[1] + rinterval
+rinterval = 1000
+rbins = np.array([0, rinterval])
+while rbins[1] <= 4000:
     binrun = 'rad_bins_(' + str(rbins[0]) + '_to_' + str(rbins[1]) + ')'
     print('radial binning for ' + str(rbins[0]) + ' to ' + str(rbins[1]) + ' : ')
 
@@ -391,3 +389,6 @@ while rbins[1] < 4000:
     ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
     plt.show()
+
+    rbins[0] = rbins[0] + rinterval
+    rbins[1] = rbins[1] + rinterval
