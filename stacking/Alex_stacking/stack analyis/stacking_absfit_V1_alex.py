@@ -8,9 +8,7 @@ from scipy.optimize import curve_fit as cf
 import os, time
 #import fitting
 import sys
-sys.path.append('C:/Users/alexw/Documents/GitHub/4th_year_project_git/Continuum fitting')
-#path for other pc sys.path.append('C:/Users/alexw/OneDrive/Documents/University work/4th year work/Main project/4th_year_project_git/Continuum fitting')
-import fitting_v9 as fitmeth
+
 #plt.style.use('mystyle') #path C:\Users\alexw\AppData\Local\Programs\Python\Python37\Lib\site-packages\matplotlib\mpl-data\stylelib
 
 def findval(array,val):
@@ -73,20 +71,20 @@ for i in range(0,carlalen):
         carlamatch.append(carlanames)
 
 ##### TEST SAMPLE OF CONFIRMED GCS AROUND CARLA targets
-#
-# gcconf = ['J0116-2052' , 'J0800+4029','J0958−2904' ,'J1017+6116' ,'J1018+0530','J1052+0806',
-# 'J1103+3449' ,'J1129+0951' ,'J1131−2705' ,'J1300+4009' ,'J1358+5752' ,'J1510+5958' ,
-# 'J1753+6310' ,'J2039−2514' ,'J2227−2705' ,'J2355−0002']
-#
-# gcconfmatch = []
-# for i in range(0,len(gcconf)):
-#     sample = str(gcconf[i])
-#     for testmatch in carlamatch:
-#         trim = testmatch[0:5]
-#         if trim == sample[0:5]:
-#             gcconfmatch.append(testmatch)
-# print(gcconfmatch)
-# carlamatch = gcconfmatch #select just this subsample
+
+gcconf = ['J0116-2052' , 'J0800+4029','J0958−2904' ,'J1017+6116' ,'J1018+0530','J1052+0806',
+'J1103+3449' ,'J1129+0951' ,'J1131−2705' ,'J1300+4009' ,'J1358+5752' ,'J1510+5958' ,
+'J1753+6310' ,'J2039−2514' ,'J2227−2705' ,'J2355−0002']
+
+gcconfmatch = []
+for i in range(0,len(gcconf)):
+    sample = str(gcconf[i])
+    for testmatch in carlamatch:
+        trim = testmatch[0:5]
+        if trim == sample[0:5]:
+            gcconfmatch.append(testmatch)
+print(gcconfmatch)
+carlamatch = gcconfmatch #select just this subsample
 
 ########################################################
 
@@ -152,8 +150,12 @@ while rbins[1] <= 4000:
                 data = fits.getdata(specdirectory,ext=1)
                 speclen = len(data)
 
-                normspec = data.field(1)
                 wlen = data.field(0)
+                flux = data.field(1)
+                medcontfit = data.field(2)
+                maxcontfit = data.field(3)
+
+                normspec = flux-medcontfit
 
                 #extract metadata
                 redshift= metaredshift[ind]
