@@ -98,7 +98,7 @@ while rbins[1] <= 4000:
 
     specstacktot = 0 #total number of spectra stacked in all carla
     carlamatchlen = len(carlamatch)
-    carlamatchlen = 50
+    carlamatchlen = 100
     carlarange = np.arange(0,carlamatchlen)
     #variables for stacking carla together
     carlahighreslen = 100000
@@ -106,6 +106,10 @@ while rbins[1] <= 4000:
     carlacutinds = []
     meanmultistore = np.zeros([len(carlarange),carlahighreslen])
     medmultistore = np.zeros([len(carlarange),carlahighreslen])
+
+    meancontmultistore = np.zeros([len(carlarange),carlahighreslen])
+    medcontmultistore = np.zeros([len(carlarange),carlahighreslen])
+
     gcwlenmin = carlahighreslen
     gcwlenmax = 0
 
@@ -128,13 +132,16 @@ while rbins[1] <= 4000:
             print('')
             print('Cluster sample error!: '+ carlamatch[carlaselect] + ' has no spec that meet criteria' )
             print('')
-            meanmultistore[carlanumber, 0:] = np.nan
-            medmultistore[carlanumber, 0:] = np.nan
+            meanmultistore[carlanumber, 0:] = fillval
+            medmultistore[carlanumber, 0:] = fillval
+            meancontmultistore[carlanumber, 0:] = fillval
+            medcontmultistore[carlanumber, 0:] = fillval
             carlacutinds.append(carlanumber)
         else:
             highreslen = 50000
             cutinds = []
             normspecstore = np.zeros([len(specselect),highreslen])
+            contspecstore = np.zeros([len(specselect),highreslen])
             wlenhighres = np.linspace(500, 4500, highreslen)
             wlenmin = 10000
             wlenmax = 0
@@ -156,8 +163,8 @@ while rbins[1] <= 4000:
                 medcontfit = data.field(2)
                 maxcontfit = data.field(3)
                 #continuum normalisation
-
-                normspec = flux/medcontfit
+                contfit = maxcontfit
+                normspec = flux
 
                 #get ivar from original spec
                 oldspecdirectory = 'Spectra/'+spec[0:20]+'.fits'
@@ -177,7 +184,6 @@ while rbins[1] <= 4000:
                 gclyalphaind = metagclyalphaind[ind]
                 stackmsg = metastackmsg[ind]
 
-
                 #conditions for stacking
                 zlims = np.array([gcredshift+0.05 , gcredshift + 4.5])
                 stonlim = 1
@@ -186,47 +192,57 @@ while rbins[1] <= 4000:
                 if gc_qso_sep < rbins[0] or gc_qso_sep > rbins[1]:
                     stackstatus.append('filtererror')
                     normspecstore[specnumber, 0:] = np.nan
+                    contspecstore[specnumber, 0:] = np.nan
                     cutinds.append(specnumber)
                     if showerror == True:
                         print('filter warning!: '+spec+' z = '+ str(redshift) +' did not meet filter condition (S/N = '+ str(stonall) +')')
                 elif lyalpha - wlen[0] <= 0: #ignore qso if it has no forest (lyalpha - wlen[0] <= 0)
                     stackstatus.append('foresterror')
                     normspecstore[specnumber, 0:] = np.nan
+                    contspecstore[specnumber, 0:] = np.nan
                     cutinds.append(specnumber)
                     if showerror == True:
                         print('forest warning!: '+spec+' z = '+ str(redshift) +' forest before start of spectrum (S/N = '+ str(stonall) +')')
                 elif redshift < zlims[0] or redshift > zlims[1]: #removes qso in carla (those within z = 0.05) and too high
                     stackstatus.append('zerror')
                     normspecstore[specnumber, 0:] = np.nan
+                    contspecstore[specnumber, 0:] = np.nan
                     cutinds.append(specnumber)
                     if showerror == True:
                         print('zlim warning!: '+spec+' z = '+ str(redshift) +' below not in limits (S/N = '+ str(stonall) +')')
                 elif stonall < stonlim:
                     stackstatus.append('stonerror')
                     normspecstore[specnumber, 0:] = np.nan
+                    contspecstore[specnumber, 0:] = np.nan
                     cutinds.append(specnumber)
                     if showerror == True:
                         print('S/N warning!: '+spec+' S/N = '+ str(stonall) +' too low (z = '+ str(redshift) +')')
                 elif gclyalpha - wlen[0] <= pw:
                     stackstatus.append('gcerror')
                     normspecstore[specnumber, 0:] = np.nan
+                    contspecstore[specnumber, 0:] = np.nan
                     cutinds.append(specnumber)
                     if showerror == True:
                         print('gc warning!: '+spec+' has z too low with respect to gc withlyalpha '+ str(gclyalpha - wlen[0]) + ' Angstroms before start of spectra')
                 else:
-                    #proceed with continuum fitting
-                    stackstatus.append('success')
+                    #continuum regulation as per Faucher and Giguierre
                     wlenshift = wlen/(1+gcredshift)
+
+                    stackstatus.append('success')
+                    #wlenshift = wlen/(1+redshift)
                     wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=fillval)
+                    contintpol = interpolate.interp1d(wlenshift, contfit, 'linear', bounds_error=False, fill_value=fillval)
                     if wlenshift[0] < wlenmin:
                         wlenmin = wlenshift[0]
                     if wlenshift[-1] > wlenmax:
                         wlenmax = wlenshift[-1]
-                    normspechighres = wlenintpol(wlenhighres)
-                    normspecstore[specnumber, 0:] = normspechighres
+
+                    normspecstore[specnumber, 0:] = wlenintpol(wlenhighres)
+                    contspecstore[specnumber, 0:] = contintpol(wlenhighres)
 
                     if showerror == True:
                         print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
+
                         #continuum plot check
                         range = np.arange(0,2500).astype(int)
                         fig1, ax = plt.subplots(2,1,num=spec[0:20])
@@ -273,6 +289,7 @@ while rbins[1] <= 4000:
                 print('')
                 meanmultistore[carlanumber, 0:] = np.nan
                 medmultistore[carlanumber, 0:] = np.nan
+                contmultistore[carlanumber, 0:] = np.nan
                 carlacutinds.append(carlanumber)
             else:
                 print(str(stacktot) +' stacked successfully with ' + str(errortot) + ' not used:')
@@ -296,19 +313,27 @@ while rbins[1] <= 4000:
                 meanspec = np.nanmean(normspecstore, axis=0)
                 medspec = np.nanmedian(normspecstore, axis=0)
 
+                contspecstore = contspecstore[0:, start:end]
+                meancont = np.nanmean(contspecstore, axis=0)
+                medcont = np.nanmedian(contspecstore, axis=0)
+
 
                 #stack carla
                 meangcwlenintpol = interpolate.interp1d(wlenhighres, meanspec, 'linear', bounds_error=False, fill_value=fillval)
                 medgcwlenintpol = interpolate.interp1d(wlenhighres, medspec, 'linear', bounds_error=False, fill_value=fillval)
+                meangccontintpol = interpolate.interp1d(wlenhighres, meancont, 'linear', bounds_error=False, fill_value=fillval)
+                medgccontintpol = interpolate.interp1d(wlenhighres, medcont, 'linear', bounds_error=False, fill_value=fillval)
                 if wlenhighres[0] < gcwlenmin:
                     gcwlenmin = wlenhighres[0]
                 if wlenhighres[-1] > gcwlenmax:
                     gcwlenmax = wlenhighres[-1]
-                meancarlastack = meangcwlenintpol(wlenmultistack)
-                medcarlastack = medgcwlenintpol(wlenmultistack)
+
                 #append stack to multidim variable:
-                meanmultistore[carlanumber, 0:] = meancarlastack
-                medmultistore[carlanumber, 0:] = medcarlastack
+                meanmultistore[carlanumber, 0:] = meangcwlenintpol(wlenmultistack)
+                medmultistore[carlanumber, 0:] = medgcwlenintpol(wlenmultistack)
+
+                meancontmultistore[carlanumber, 0:] = meangccontintpol(wlenmultistack)
+                medcontmultistore[carlanumber, 0:] = medgccontintpol(wlenmultistack)
 
         carlanumber = carlanumber + 1
     #print uncombined stacks for carla
@@ -327,126 +352,67 @@ while rbins[1] <= 4000:
     meanmultistore = meanmultistore[0:, gcstart:gcend]
     meancarla = np.nanmean(meanmultistore, axis=0)
 
+    meancontmultistore = meancontmultistore[0:, gcstart:gcend]
+    meancontcarla = np.nanmean(meancontmultistore, axis=0)
+
     #med
     medmultistore = medmultistore[0:, gcstart:gcend]
     medcarla = np.nanmedian(medmultistore, axis=0)
 
+    medcontmultistore = medcontmultistore[0:, gcstart:gcend]
+    medcontcarla = np.nanmean(medcontmultistore, axis=0)
 
-    ###absorbtion line fitting####
-    #fitting needs initial data so extract data about abs line
-    def guassian(x, amp, mean, std):
-        return amp*np.exp(-((x-mean)**2)/(2*(std)**2))
+    plt.figure('raw mean')
+    plt.plot(wlenmultistack,meancarla)
+    plt.plot(wlenmultistack,meancontcarla)
 
-    fig0, ax = plt.subplots(2,1,num=binrun+'Absorption line fitting')
 
-    abslineind = findval(wlenmultistack, 1215.67)
-    datarange = np.arange(abslineind - 12, abslineind + 15)
-    plotrange = np.arange(abslineind - 50, abslineind + 50)
-    absflux = meancarla[datarange]
-    abswlen = wlenmultistack[datarange]
 
-    popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
-    meanamp, meanmean, meanstd = popt
-    ax[0].plot(wlenmultistack[plotrange], meancarla[plotrange])
-    ax[0].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
+    #continuum regulation as per Faucher and Giguierre
+    range = np.arange(findval(wlenmultistack, 1100),findval(wlenmultistack, 3000))
+    wlen = wlenmultistack[range]*(1+gcredshift)
+    wlenshift = wlenmultistack[range]
+    flux = meancarla[range]
+    cont = meancontcarla[range]
+
+    norm = flux/cont
+
+    lya = 1215.67
+    z = (wlen/lya) -1
+    zshift = z-gcredshift
+    a = 0.0018
+    b = 3.92
+    teff = a*(1+z)**b
+    faucher = np.exp(-teff)
+
+    #fit norm continuum
+    def quad(x, a, b, c):
+        return a*x**2+b*x+c
+
+    popt, pcov = cf(quad, wlenshift, norm)
+    a, b, c = popt
+    fit = quad(wlenshift,a, b, c)
+    corrected =  norm + (faucher - fit)
+
+
+    fig1, ax = plt.subplots(2,1,num='plot')
+
+    ax[0].plot(wlenshift, flux, label='flux')
+    ax[0].plot(wlenshift, cont, label='cont')
     ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
     ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
     ax[0].legend()
 
-    absflux = medcarla[datarange]
-    abswlen = wlenmultistack[datarange]
-    popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
-    medamp,medmean,medstd = popt
-    ax[1].plot(wlenmultistack[plotrange], medcarla[plotrange])
-    ax[1].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
-    ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-    ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+    ax[1].plot(wlenshift, (norm), label='norm')
+    ax[1].plot(wlenshift, (faucher), label='faucher')
+    ax[1].plot(wlenshift, fit, label='fit')
+    ax[1].plot(wlenshift, corrected, label='corrected')
+    ax[1].set_xlabel(r'$z$')
     ax[1].legend()
-
-    #plot relative vel graph and find delv of line from rest gc ly alpha
-    fig1, ax = plt.subplots(2,1,num=binrun+'velocity Absorption line plot')
-    c = 299792.458
-    lam = wlenmultistack
-    lam_em = 1215.67
-    vrel = c*((lam  - lam_em)/lam_em)
-
-    abslineind = findval(vrel, 0)
-    plotrange = np.arange(abslineind - 50, abslineind + 50)
-
-    ax[0].plot(vrel, meancarla)
-    ax[0].set_xlabel(r'$\delta$v ($kms^{-1})$')
-    ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
-    ax[1].plot(vrel, medcarla)
-    ax[1].set_xlabel(r'$\delta$v ($kms^{-1}$)')
-    ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
-
-    # plt.figure() #voigt profile
-    # x = np.arange(0, 10, 0.01)
-    # v1 = models.Voigt1D(x_0=5, amplitude_L=10, fwhm_L=0.5, fwhm_G=0.9)
-    # plt.plot(x, v1(x))
-
-    #plotting output
-    cutspeclen = int(carlahighreslen/3)
-    fig2, ax = plt.subplots(2,1,num=binrun+'multi-carla stack - uncombined')
-    for c in range(0,carlasucces):
-        meanflux = meanmultistore[c, :]
-        medflux = medmultistore[c, :]
-        meanrange = tuple([~np.isnan(meanflux)])
-        medrange = tuple([~np.isnan(medflux)])
-
-        meanwlen = wlenmultistack[meanrange]
-        medwlen = wlenmultistack[medrange]
-        meanflux = meanflux[meanrange]
-        medflux = medflux[medrange]
-
-        if len(meanwlen) == 0 or len(medwlen) == 0:
-            print('not showing zero stack for ' + carlamatch[c])
-        else:
-            dsrange = np.linspace(meanwlen[0], meanwlen[-1],10000)
-            dsflux = signal.resample(meanflux, 10000)
-            ax[0].plot(dsrange, dsflux)
-            ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-            ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
-            dsflux = signal.resample(medmultistore[c, :-1000], 10000)
-            ax[1].plot(medwlen, medflux)
-            ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-            ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
-
-
-    #ref lines from sdss
-    refline = open('refline.txt', 'r')
-    linename = []
-    wlenline = np.array([])
-    for line in refline:
-        line = line.strip()
-        columns = line.split()
-        wlenline = np.append(wlenline, float(columns[0]))
-        linename.append(columns[1])
-    refline.close()
-    linename = linename[0:12] #restrict higher WLEN lines
-    wlenline = wlenline[0:12]
-
-    fig3, ax = plt.subplots(2,1,num=binrun+'('+str(carlasucces)+'/'+str(carlanumber)+ ') stacked clusters')
-    ax[0].plot(wlenmultistack[:-cutspeclen], (meancarla[:-cutspeclen]))
-    #ax[0].plot(np.array([(1215.67),(1215.67)]),np.array([np.min(meancarla),np.max(meancarla)]),'--')
-    for i in range(0,12): #plot emission lines for reference
-        ax[0].plot(wlenline[i],meancarla[findval(wlenmultistack,wlenline[i])],'.',label = linename[i])
-    ax[0].text(1215.67, np.min(meancarla), r' Ly$\alpha$ absorbtion for multi-carla stack with '+ str(specstacktot) +' spectra')
-    ax[0].set_xlabel(r' $\lambda$ ($\mathrm{\AA}$)')
-    ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-    ax[0].legend()
-
-    ax[1].plot(wlenmultistack[:-cutspeclen], medcarla[:-cutspeclen])
-    ax[1].plot(np.array([(1215.67),(1215.67)]),np.array([np.min(medcarla),np.max(medcarla)]),'--')
-    ax[1].text(1215.67, np.min(medcarla), r' Ly$\alpha$ absorbtion for multi-carla stack with '+ str(specstacktot) +' spectra')
-    ax[1].set_xlabel(r' $\lambda$ ($\mathrm{\AA}$)')
-    ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
     plt.show()
+
+
+
 
     rbins[0] = rbins[0] + rinterval
     rbins[1] = rbins[1] + rinterval

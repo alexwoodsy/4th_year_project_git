@@ -10,33 +10,50 @@ import os
 
 specnames = next(os.walk('Fitted Spectra/'))[2]
 spectot = len(specnames)
+lya = 1215.67
 
-for spec in specnames:    
+for spec in specnames[1000:1100]:
     specdirectory = 'Fitted Spectra/' + spec
     data = fits.getdata(specdirectory, ext=1)
-    metadata = fits.getdata(specdirectory, ext=1)
+    metadata = fits.getdata(specdirectory, ext=2)
+    redshift = metadata.field(0) #qso z
+
     wlen = data.field(0)
     flux = data.field(1)
     medcontfit = data.field(2)
     maxcontfit = data.field(3)
 
+    wlenshift = wlen/(1+redshift)
+    maxnormspec = (flux/medcontfit)
 
-    maxnormspec = flux/maxcontfit
+    # #z =  (wlenshift/lya)*(1+redshift) - 1
+    # z =  ((wlen/lya) -1)/(1+redshift) -1
+    # a = 0.0018
+    # b = 3.92
+    # teff = a*(1+z)**b
+    # faucher = np.exp(-teff)
 
-    fig1, ax = plt.subplots(2,1,num='plot')
+    plate = spec[5:9]
+    mjd = spec[10:15]
+    fiberid = spec[16:20]
 
-    ax[0].plot(wlen, flux, label='flux')
-    ax[0].plot(wlen, medcontfit, label='med')
-    ax[0].plot(wlen, maxcontfit, label='max')
-    ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-    ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+    path = 'E:/spectralyalpha/BOSSLyaDR9_spectra/BOSSLyaDR9_spectra/'+plate+'/'+'speclya-'+plate+'-'+mjd+'-'+fiberid+'.fits'
+    leedata = fits.getdata(path,ext=1)#import fits image
+    leeflux = leedata.field(0)
+    leewlen = 10**leedata.field(1)
+    leemodel = leedata.field(7)
+    leecont = leedata.field(11)
 
-    ax[1].plot(wlen, maxnormspec, label='normmax')
-    ax[1].set_xlabel(r'$\delta$v ($kms^{-1}$)')
-    ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-    ax[1]
+    plt.plot(wlen,flux,label='ours')
+    plt.plot(leewlen,leeflux,label='lee')
+    plt.plot(wlen,medcontfit,label='ours')
+    plt.plot(leewlen,leecont,label='lee')
+
+    plt.legend()
+
+
+
     plt.show()
-
 
 
 
