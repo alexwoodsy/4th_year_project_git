@@ -58,10 +58,24 @@ plt.legend()
 plt.figure('rad hist')
 xvar = gc_qso_sep
 step = 50
-print(np.min(xvar))
-print(np.max(xvar))
+
 binning = np.arange(int(np.min(xvar)), int(np.max(xvar)+step) , step)
 labelnames = [r'$R_{\perp}$']
+n, bins, patches = plt.hist(x = xvar, bins = binning, log = True, alpha=1, rwidth = 0.9, histtype = 'bar', label = labelnames)
+
+#plt.grid(axis='y', alpha=0.4)
+plt.xlabel(r'$R_{\perp}$ (arcseconds)')
+tickrange = np.arange(int(np.min(xvar)), int(np.max(xvar)+step) , step*4)
+plt.xticks(tickrange)
+plt.ylabel(r'$N_{QSO}$')
+plt.legend()
+
+plt.figure('z speration hist')
+xvar = redshift - gcredshift
+step = 0.1
+
+binning = np.arange(int(np.min(xvar)), int(np.max(xvar)+step) , step)
+labelnames = [r'$z seperation$']
 n, bins, patches = plt.hist(x = xvar, bins = binning, log = True, alpha=1, rwidth = 0.9, histtype = 'bar', label = labelnames)
 
 #plt.grid(axis='y', alpha=0.4)
