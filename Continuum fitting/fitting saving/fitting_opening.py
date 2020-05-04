@@ -24,7 +24,7 @@ for spec in specnames[1000:1100]:
     maxcontfit = data.field(3)
 
     wlenshift = wlen/(1+redshift)
-    maxnormspec = (flux/medcontfit)
+    maxnormspec = (flux/maxcontfit)
 
     # #z =  (wlenshift/lya)*(1+redshift) - 1
     # z =  ((wlen/lya) -1)/(1+redshift) -1
@@ -38,15 +38,23 @@ for spec in specnames[1000:1100]:
     fiberid = spec[16:20]
 
     path = 'E:/spectralyalpha/BOSSLyaDR9_spectra/BOSSLyaDR9_spectra/'+plate+'/'+'speclya-'+plate+'-'+mjd+'-'+fiberid+'.fits'
-    leedata = fits.getdata(path,ext=1)#import fits image
+
+    hdul = fits.open(path)
+    leedata = hdul[1].data
+    contflag = hdul[1].header['CONTFLG']
+
+    #leedata = fits.getdata(path,ext=1)#import fits image
     leeflux = leedata.field(0)
     leewlen = 10**leedata.field(1)
     leemodel = leedata.field(7)
+    noisecorr = leedata.field(10)
     leecont = leedata.field(11)
+
+    hdul.close()
 
     plt.plot(wlen,flux,label='ours')
     plt.plot(leewlen,leeflux,label='lee')
-    plt.plot(wlen,medcontfit,label='ours')
+    plt.plot(wlen,maxcontfit,label='ours')
     plt.plot(leewlen,leecont,label='lee')
 
     plt.legend()
