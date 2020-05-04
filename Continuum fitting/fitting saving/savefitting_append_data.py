@@ -93,7 +93,7 @@ for i in range(0,fitlen):
     metagclyalphaind[i] = metatabledata[i][10]
     metastackmsg.append(metatabledata[i][11])
 
-for i in range(0,10):
+for i in range(3000,fitlen):
     lyalpha = metalyalpha[i]
     redshift = metaredshift[i]
     lyalphaind = int(metalyalphaind[i])
@@ -106,6 +106,8 @@ for i in range(0,10):
     speclen = len(data)
     wlen = 10**data.field(1)
     flux = data.field(0)
+
+
 
     #--------------------Continuum fitting-----------------------#
 
@@ -120,7 +122,6 @@ for i in range(0,10):
     pw = 100
 
     #fitv9 method
-
     if lyalpha - wlen[0] <= pw: #if no forest just fit the other part of the spectrum
         stackstatus = 'FORESTERROR' #metadata
         step = 0
@@ -143,7 +144,7 @@ for i in range(0,10):
     else: #for good spec fit accordingly
         stackstatus = 'SUCCESS' #metadata
         step = 0
-        while step <= speclen:
+        while step < speclen:
             if step <= lyalphaind:
                 winnum = forestwinnum
                 window = int(lyalphaind/winnum)
@@ -181,11 +182,6 @@ for i in range(0,10):
 
                 step = step + window
 
-    #pad interval with start/end value to allign correctly
-    medintervalwlen[0] = wlen[0]
-    medintervalwlen[-1] = wlen[-1]
-    maxintervalwlen[0] = wlen[0]
-    maxintervalwlen[-1] = wlen[-1]
 
     #add in points for splines at emmission lines
     refline = open('refline.txt', 'r')
@@ -232,12 +228,22 @@ for i in range(0,10):
     medwinpeak = np.append(medwinpeak, fluxline)
     medwinpeak = medwinpeak[sortind]
 
+    #pad interval with start/end value to allign correctly
+    medintervalwlen[0] = wlen[0]
+    medintervalwlen[-1] = wlen[-1]
+    maxintervalwlen[0] = wlen[0]
+    maxintervalwlen[-1] = wlen[-1]
+
     #combined where max is used in the forest up to lyalpha peak and med after;
     maxlyaintind = findval(maxintervalwlen, wlenline[1])
     medlyaintind = findval(maxintervalwlen, wlenline[1])
     max_medintervalwlen = np.array([])
     max_medintervalwlen = np.append(maxintervalwlen[0:maxlyaintind],medintervalwlen[medlyaintind:])
     max_medwinpeak = np.append(maxwinpeak[0:maxlyaintind],medwinpeak[medlyaintind:])
+
+    # plt.plot(wlen,flux)
+    # plt.plot(medintervalwlen, medwinpeak)
+    # plt.show()
 
 
     medintpol = interpolate.interp1d(medintervalwlen, medwinpeak, kind = 1)
@@ -325,7 +331,7 @@ for i in range(0,10):
         primary = fits.PrimaryHDU()
         hdul = fits.HDUList([primary, specfitdata, metadata])
 
-        outname = 'test/' + prefitspec
+        outname = 'Fitted Spectra/' + prefitspec
 
         hdul.writeto(outname, overwrite = True)
         print('done '+prefitspec + ' number {lee}' + str(i))
@@ -364,7 +370,7 @@ for i in range(0,10):
         primary = fits.PrimaryHDU()
         hdul = fits.HDUList([primary, specfitdata, leefitdata, metadata])
 
-        outname = 'test/' + prefitspec
+        outname = 'Fitted Spectra/' + prefitspec
 
         hdul.writeto(outname, overwrite = True)
         print('done '+prefitspec + ' number ' + str(i))
