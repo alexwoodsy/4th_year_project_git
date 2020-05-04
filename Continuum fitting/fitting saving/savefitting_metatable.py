@@ -25,11 +25,19 @@ gc_qso_sep = []
 gclyalpha = []
 gclyalphaind = []
 stackmsg = []
+leecheckcol = []
+leecontflag = []
 
 
 maxlenspecname = 0
 for spec in specnames:
-    fitdata = fits.getdata('Fitted Spectra/'+spec, ext=2)
+    hdul = fits.open('Fitted Spectra/'+spec)
+    hdunum = len(hdul)
+    if hdunum == 3: #reads correct thing in if lee data present
+        fitdata = fits.getdata('Fitted Spectra/'+spec, ext=2)
+    else:
+        fitdata = fits.getdata('Fitted Spectra/'+spec, ext=3)
+
     specfilename = np.append(specfilename, spec)
     if len(spec) > maxlenspecname:
         maxlenspecname = len(spec)
@@ -44,10 +52,11 @@ for spec in specnames:
     gclyalpha = np.append(gclyalpha, fitdata[0][8])
     gclyalphaind = np.append(gclyalphaind, fitdata[0][9])
     stackmsg = np.append(stackmsg, fitdata[0][10])
+    leecheckcol = np.append(leecheckcol, fitdata[0][11])
+    leecontflag = np.append(leecontflag, fitdata[0][12])
 
 
 #put in from_columns
-#specfilenamecol = fits.Column(name='SPEC_FILE_NAME', array=np.array([specnames]), format='20A')
 specfilenamecol = fits.Column(name='SPEC_FILE_NAME', array = specfilename, format=str(maxlenspecname)+'A')
 redshiftcol = fits.Column(name='QSO_Z', array = redshift, format='F')
 stonallcol = fits.Column(name='STON_ALL', array = stonall, format='F')
@@ -60,14 +69,16 @@ gc_qso_sepcol = fits.Column(name='GC_SEPERATION', array = gc_qso_sep, format='F'
 gclyalphacol = fits.Column(name='GC_LYa', array = gclyalpha, format='F')
 gclyalphaindcol = fits.Column(name='GC_LYa_INDEX', array = gclyalphaind, format='K')
 stackmsgcol = fits.Column(name='STACK_STATUS', array = stackmsg, format='20A')
+leecheckcol = fits.Column(name='LEE_CHECK', array = leecheckcol, format='K')
+leecontflagcol = fits.Column(name='LEE_CONT_FLAG', array = leecontflag, format='K')
 
 metadata = fits.BinTableHDU.from_columns([specfilenamecol, redshiftcol, stonallcol, stonforestcol, lyalphacol,
-lyalphaindcol, gcnamecol, gcredshiftcol, gc_qso_sepcol, gclyalphacol, gclyalphaindcol, stackmsgcol])
+lyalphaindcol, gcnamecol, gcredshiftcol, gc_qso_sepcol, gclyalphacol, gclyalphaindcol, stackmsgcol,leecheckcol, leecontflagcol])
 
 primary = fits.PrimaryHDU()
 hdul = fits.HDUList([primary, metadata])
 
-hdul.writeto('metatable.fits',overwrite = True)
+hdul.writeto('metatable_V2.fits',overwrite = True)
 
 #################specfilenamecol,
 

@@ -98,7 +98,7 @@ while rbins[1] <= 4000:
 
     specstacktot = 0 #total number of spectra stacked in all carla
     carlamatchlen = len(carlamatch)
-    carlamatchlen = 100
+    carlamatchlen = 10
     carlarange = np.arange(0,carlamatchlen)
     #variables for stacking carla together
     carlahighreslen = 100000
@@ -168,7 +168,7 @@ while rbins[1] <= 4000:
 
                 #get ivar from original spec
                 oldspecdirectory = 'Spectra/'+spec[0:20]+'.fits'
-                olddata = fits.getdata(specdirectory,ext=1)
+                olddata = fits.getdata(oldspecdirectory,ext=1)
                 var = 1/(olddata.field(3))
 
                 #extract metadata
