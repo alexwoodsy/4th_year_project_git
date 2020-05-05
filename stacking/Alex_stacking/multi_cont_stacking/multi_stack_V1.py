@@ -69,7 +69,7 @@ for i in range(0,carlalen):
     carlanames = str(carladata[i][0])
     overdensity[i] = carladata[i][6]
     for k in range(0,fitlen):
-        if carlanames ==  metagcname[k]: #'J080016.10+402955.6':#and overdensity[i] > 3: #add conditional for overdendity etc.. here
+        if carlanames ==  metagcname[k]: #and overdensity[i] >= 3: #add conditional for overdendity etc.. here
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames)
@@ -92,20 +92,39 @@ for i in range(0,carlalen):
 
 ########################################################
 
+carlamatchlen = len(carlamatch)
+
+
+
+#################debugging selection parameters parameters:########################################
+chooselee = True #select leed fitting
+speccut = True #cuts our spec in the same way lee has
+showerror = False #see continuum fits + inividiual spec stack info
+###############------Radial Binning------##################
+rinterval = 4000
+rend = 4000
+###############------carla selection ------##################
+#carlastackingtotal = carlamatchlen #all carla
+carlastackingtotal = 100 #carla subset
+##############-------Run saving filename (choose accroding to stack info) ------##########
+runsavename = 'lee_medovd3'
+saveoutput = False
+###################################################################################################
+
+
 
 #do multiple bin stacks:
 fillval = np.nan
-
-rinterval = 500
 rbins = np.array([0, rinterval])
-while rbins[1] <= 1000:
+while rbins[1] <= rend:
     binrun = 'rad_bins_(' + str(rbins[0]) + '_to_' + str(rbins[1]) + ')'
     print('radial binning for ' + str(rbins[0]) + ' to ' + str(rbins[1]) + ' : ')
 
     specstacktot = 0 #total number of spectra stacked in all carla
-    carlamatchlen = len(carlamatch)
-    #carlamatchlen = 30
-    carlarange = np.arange(0,carlamatchlen)
+    qsostacked = []
+    carlastacked = []
+
+    carlarange = np.arange(0,carlastackingtotal)
     #variables for stacking carla together
     carlahighreslen = 100000
     wlenmultistack = np.linspace(500, 4000, carlahighreslen)
@@ -155,13 +174,8 @@ while rbins[1] <= 1000:
             wlenmin = 10000
             wlenmax = 0
             stackstatus = []
-
-#################debugging selection parameters parameters:########################################
-            chooselee = False
-            speccut = True
-            showerror = False
-###################################################################################################
             specnumber = 0
+
             for ind in specselect:
                 #extract metadata
                 redshift= metaredshift[ind]
@@ -235,7 +249,7 @@ while rbins[1] <= 1000:
                     else:
                         stackstatus.append('success')
 
-                        wlenshift = wlen/(1+gcredshift)
+                        wlenshift = wlen/(1+gcredshift) #+np.random.random(1)-0.5
 
                         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=fillval)
                         contintpol = interpolate.interp1d(wlenshift, contfit, 'linear', bounds_error=False, fill_value=fillval)
@@ -246,6 +260,7 @@ while rbins[1] <= 1000:
 
                         normspecstore[specnumber, 0:] = wlenintpol(wlenhighres)
                         contspecstore[specnumber, 0:] = contintpol(wlenhighres)
+                        qsostacked.append(spec[0:20])
 
                         if showerror == True:
                             print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
@@ -319,7 +334,7 @@ while rbins[1] <= 1000:
                     else:
                         stackstatus.append('success')
 
-                        wlenshift = wlen/(1+gcredshift)
+                        wlenshift = wlen/(1+gcredshift) #+np.random.random(1)-0.5
 
                         wlenintpol = interpolate.interp1d(wlenshift, normspec, 'linear', bounds_error=False, fill_value=fillval)
                         contintpol = interpolate.interp1d(wlenshift, contfit, 'linear', bounds_error=False, fill_value=fillval)
@@ -330,6 +345,7 @@ while rbins[1] <= 1000:
 
                         normspecstore[specnumber, 0:] = wlenintpol(wlenhighres)
                         contspecstore[specnumber, 0:] = contintpol(wlenhighres)
+                        qsostacked.append(spec[0:20])
 
                         if showerror == True:
                             print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
@@ -424,6 +440,9 @@ while rbins[1] <= 1000:
                 meancontmultistore[carlanumber, 0:] = meangccontintpol(wlenmultistack)
                 medcontmultistore[carlanumber, 0:] = medgccontintpol(wlenmultistack)
 
+                #save name of carla for saving
+                carlastacked.append(gcname)
+
         carlanumber = carlanumber + 1
     #print uncombined stacks for carla
 
@@ -453,52 +472,52 @@ while rbins[1] <= 1000:
 
     ###absorbtion line fitting####
     #fitting needs initial data so extract data about abs line
-    def guassian(x, amp, mean, std):
-        return amp*np.exp(-((x-mean)**2)/(2*(std)**2))
-
-    fig0, ax = plt.subplots(2,1,num=binrun+'Absorption line fitting')
-
-    abslineind = findval(wlenmultistack, 1215.67)
-    datarange = np.arange(abslineind - 12, abslineind + 15)
-    plotrange = np.arange(abslineind - 50, abslineind + 50)
-    absflux = meancarla[datarange]
-    abswlen = wlenmultistack[datarange]
-
-    popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
-    meanamp, meanmean, meanstd = popt
-    ax[0].plot(wlenmultistack[plotrange], meancarla[plotrange])
-    ax[0].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
-    ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-    ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-    ax[0].legend()
-
-    absflux = medcarla[datarange]
-    abswlen = wlenmultistack[datarange]
-    popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
-    medamp,medmean,medstd = popt
-    ax[1].plot(wlenmultistack[plotrange], medcarla[plotrange])
-    ax[1].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
-    ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-    ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-    ax[1].legend()
-
-    #plot relative vel graph and find delv of line from rest gc ly alpha
-    fig1, ax = plt.subplots(2,1,num=binrun+'velocity Absorption line plot')
+    # def guassian(x, amp, mean, std):
+    #     return amp*np.exp(-((x-mean)**2)/(2*(std)**2))
+    #
+    # fig0, ax = plt.subplots(2,1,num=binrun+'Absorption line fitting')
+    #
+    # abslineind = findval(wlenmultistack, 1215.67)
+    # datarange = np.arange(abslineind - 12, abslineind + 15)
+    # plotrange = np.arange(abslineind - 50, abslineind + 50)
+    # absflux = meancarla[datarange]
+    # abswlen = wlenmultistack[datarange]
+    #
+    # popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
+    # meanamp, meanmean, meanstd = popt
+    # ax[0].plot(wlenmultistack[plotrange], meancarla[plotrange])
+    # ax[0].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
+    # ax[0].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+    # ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+    # ax[0].legend()
+    #
+    # absflux = medcarla[datarange]
+    # abswlen = wlenmultistack[datarange]
+    # popt, pcov = cf(guassian, abswlen, absflux, bounds =([-np.inf,1215.67-0.5,-np.inf],[np.inf,1215.67+0.5,np.inf]))
+    # medamp,medmean,medstd = popt
+    # ax[1].plot(wlenmultistack[plotrange], medcarla[plotrange])
+    # ax[1].plot(abswlen, guassian(abswlen, *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
+    # ax[1].set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+    # ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+    # ax[1].legend()
+    #
+    # #plot relative vel graph and find delv of line from rest gc ly alpha
+    # fig1, ax = plt.subplots(2,1,num=binrun+'velocity Absorption line plot')
     c = 299792.458
     lam = wlenmultistack
     lam_em = 1215.67
     vrel = c*((lam  - lam_em)/lam_em)
-
-    abslineind = findval(vrel, 0)
-    plotrange = np.arange(abslineind - 50, abslineind + 50)
-
-    ax[0].plot(vrel, meancarla)
-    ax[0].set_xlabel(r'$\delta$v ($kms^{-1})$')
-    ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
-    ax[1].plot(vrel, medcarla)
-    ax[1].set_xlabel(r'$\delta$v ($kms^{-1}$)')
-    ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+    #
+    # abslineind = findval(vrel, 0)
+    # plotrange = np.arange(abslineind - 50, abslineind + 50)
+    #
+    # ax[0].plot(vrel, meancarla)
+    # ax[0].set_xlabel(r'$\delta$v ($kms^{-1})$')
+    # ax[0].set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+    #
+    # ax[1].plot(vrel, medcarla)
+    # ax[1].set_xlabel(r'$\delta$v ($kms^{-1}$)')
+    # ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
 
     # plt.figure() #voigt profile
@@ -566,6 +585,30 @@ while rbins[1] <= 1000:
     ax[1].set_ylabel(r'MEDIAN $F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
 
     plt.show()
+
+    if saveoutput == True:
+        #save stacked wlen, flux in lamba/v_rel for opeing again for med/median. + stack info in metadata extension
+        wlencol = fits.Column(name='Wavelength', array = wlenmultistack, format='F')
+        vrelcol = fits.Column(name='V_rel', array = vrel, format='F')
+        medfluxcol = fits.Column(name='Median_Flux', array = medcarla, format='F')
+        meanfluxcol = fits.Column(name='Mean_Flux', array = meancarla, format='F')
+        stacksavedata = fits.BinTableHDU.from_columns([wlencol, vrelcol, medfluxcol, meanfluxcol])
+        #metadata:
+
+        #ext2 = carlatargets in stack
+        carlastackedcol = fits.Column(name='CARLA', array = carlastacked, format='20A')
+        carlastackedsavedata = fits.BinTableHDU.from_columns([carlastackedcol])
+        #ext3 = qso in the stack
+        qsostackedcol = fits.Column(name='QSO', array = qsostacked, format='25A')
+        qsostackedsavedata = fits.BinTableHDU.from_columns([qsostackedcol])
+
+
+        primary = fits.PrimaryHDU()
+        hdul = fits.HDUList([primary, stacksavedata, carlastackedsavedata, qsostackedsavedata])
+
+        outname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'
+        hdul.writeto(outname, overwrite = True)
+
 
     rbins[0] = rbins[0] + rinterval
     rbins[1] = rbins[1] + rinterval
