@@ -15,7 +15,7 @@ def findval(array,val):
     return ind
 
 #read ion stacked data:
-runsavename = 'lee_rbin1000'
+runsavename = 'max_med_Allcarla'
 print(np.random.random(1))
 
 inname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'

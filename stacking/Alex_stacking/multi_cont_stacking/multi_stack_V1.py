@@ -97,18 +97,18 @@ carlamatchlen = len(carlamatch)
 
 
 #################debugging selection parameters parameters:########################################
-chooselee = True #select leed fitting
+chooselee = False #select leed fitting
 speccut = True #cuts our spec in the same way lee has
 showerror = False #see continuum fits + inividiual spec stack info
 ###############------Radial Binning------##################
 rinterval = 4000
 rend = 4000
 ###############------carla selection ------##################
-#carlastackingtotal = carlamatchlen #all carla
-carlastackingtotal = 100 #carla subset
+carlastackingtotal = carlamatchlen #all carla
+#carlastackingtotal = 100 #carla subset
 ##############-------Run saving filename (choose accroding to stack info) ------##########
-runsavename = 'lee_medovd3'
-saveoutput = False
+runsavename = 'max_med_Allcarla'
+saveoutput = True
 ###################################################################################################
 
 
@@ -122,6 +122,9 @@ while rbins[1] <= rend:
 
     specstacktot = 0 #total number of spectra stacked in all carla
     qsostacked = []
+    qso_z = []
+    qso_sn = []
+    qso_gcz = []
     carlastacked = []
 
     carlarange = np.arange(0,carlastackingtotal)
@@ -150,7 +153,7 @@ while rbins[1] <= rend:
         #get sample to stack:
         specselect = []
         for k in range(0,fitlen):
-            if metagcname[k] == carlamatch[carlaselect]:  #CHNAGE DEPEDNING ON SAMPLE
+            if metagcname[k] == carlamatch[carlaselect]:  #CHNAGES DEPEDNING ON SAMPLE
                 specselect.append(k)
 
         print('sample of '+str(len(specselect))+' found for stacking')
@@ -260,7 +263,11 @@ while rbins[1] <= rend:
 
                         normspecstore[specnumber, 0:] = wlenintpol(wlenhighres)
                         contspecstore[specnumber, 0:] = contintpol(wlenhighres)
+                        #saving metadata
                         qsostacked.append(spec[0:20])
+                        qso_z = np.append(qso_z, redshift)
+                        qso_sn = np.append(qso_sn, stonall)
+                        qso_gcz = np.append(qso_gcz,gcredshift)
 
                         if showerror == True:
                             print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
@@ -345,7 +352,11 @@ while rbins[1] <= rend:
 
                         normspecstore[specnumber, 0:] = wlenintpol(wlenhighres)
                         contspecstore[specnumber, 0:] = contintpol(wlenhighres)
+                        #saving metadata
                         qsostacked.append(spec[0:20])
+                        qso_z = np.append(qso_z, redshift)
+                        qso_sn = np.append(qso_sn, stonall)
+                        qso_gcz = np.append(qso_gcz,gcredshift)
 
                         if showerror == True:
                             print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
@@ -468,7 +479,7 @@ while rbins[1] <= rend:
     medcarla = np.nanmedian(medmultistore, axis=0)
 
     medcontmultistore = medcontmultistore[0:, gcstart:gcend]
-    medcontcarla = np.nanmean(medcontmultistore, axis=0)
+    medcontcarla = np.nanmedian(medcontmultistore, axis=0)
 
     ###absorbtion line fitting####
     #fitting needs initial data so extract data about abs line
@@ -600,7 +611,10 @@ while rbins[1] <= rend:
         carlastackedsavedata = fits.BinTableHDU.from_columns([carlastackedcol])
         #ext3 = qso in the stack
         qsostackedcol = fits.Column(name='QSO', array = qsostacked, format='25A')
-        qsostackedsavedata = fits.BinTableHDU.from_columns([qsostackedcol])
+        qso_zcol = fits.Column(name='Redshift', array = qso_z, format='F')
+        qso_sncol = fits.Column(name='S_N', array = qso_sn, format='F')
+        qso_gczcol = fits.Column(name='GC_Z', array = qso_gcz, format='F')
+        qsostackedsavedata = fits.BinTableHDU.from_columns([qsostackedcol, qso_zcol, qso_sncol, qso_gczcol])
 
 
         primary = fits.PrimaryHDU()
