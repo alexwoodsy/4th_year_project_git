@@ -18,14 +18,14 @@ def findval(array,val):
 #get lee anit-match from fits file made in topcat:
 leefolderpath = 'E:/spectralyalpha/BOSSLyaDR9_spectra/BOSSLyaDR9_spectra/'
 
-leeamdata = fits.getdata('lee_anti-match.fits',ext=1)#import fits image
+leeamdata = fits.getdata('Anti-Match/lee_anti-match.fits',ext=1)#import fits image
 leeamlen = len(leeamdata)
 leeam_z = []
 leeam_sn = []
 
 
 
-####################-----now stack them all------#####################
+####################-----now stack them all FOR LEE------#####################
 #runlen = leeamlen
 runlen = 1000
 #stacking initialisatin
@@ -45,8 +45,6 @@ specnumber = 0
 
 
 showerror = False
-
-
 
 for ind in range(0,runlen):
     plate = str(leeamdata[ind][4]).zfill(4)
