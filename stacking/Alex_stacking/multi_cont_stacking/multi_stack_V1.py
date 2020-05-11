@@ -69,7 +69,7 @@ for i in range(0,carlalen):
     carlanames = str(carladata[i][0])
     overdensity[i] = carladata[i][6]
     for k in range(0,fitlen):
-        if carlanames ==  metagcname[k]: #and overdensity[i] >= 3: #add conditional for overdendity etc.. here
+        if carlanames ==  metagcname[k] and overdensity[i] >= 5: #add conditional for overdendity etc.. here
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames)
@@ -107,7 +107,7 @@ rend = 4000
 carlastackingtotal = carlamatchlen #all carla
 #carlastackingtotal = 100 #carla subset
 ##############-------Run saving filename (choose accroding to stack info) ------##########
-runsavename = 'max_med_Allcarla'
+runsavename = 'max_med_od5'
 saveoutput = True
 ###################################################################################################
 
@@ -125,6 +125,7 @@ while rbins[1] <= rend:
     qso_z = []
     qso_sn = []
     qso_gcz = []
+    qso_gcname = []
     carlastacked = []
 
     carlarange = np.arange(0,carlastackingtotal)
@@ -268,6 +269,7 @@ while rbins[1] <= rend:
                         qso_z = np.append(qso_z, redshift)
                         qso_sn = np.append(qso_sn, stonall)
                         qso_gcz = np.append(qso_gcz,gcredshift)
+                        qso_gcname.append(gcname)
 
                         if showerror == True:
                             print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
@@ -357,6 +359,7 @@ while rbins[1] <= rend:
                         qso_z = np.append(qso_z, redshift)
                         qso_sn = np.append(qso_sn, stonall)
                         qso_gcz = np.append(qso_gcz,gcredshift)
+                        qso_gcname.append(gcname)
 
                         if showerror == True:
                             print('adding '+spec+' S/N = '+ str(stonall) +'and z = '+ str(redshift) +' to stack.')
@@ -613,8 +616,9 @@ while rbins[1] <= rend:
         qsostackedcol = fits.Column(name='QSO', array = qsostacked, format='25A')
         qso_zcol = fits.Column(name='Redshift', array = qso_z, format='F')
         qso_sncol = fits.Column(name='S_N', array = qso_sn, format='F')
+        qso_gcnamecol = fits.Column(name='GC_NAME', array = qso_gcname, format='25A')
         qso_gczcol = fits.Column(name='GC_Z', array = qso_gcz, format='F')
-        qsostackedsavedata = fits.BinTableHDU.from_columns([qsostackedcol, qso_zcol, qso_sncol, qso_gczcol])
+        qsostackedsavedata = fits.BinTableHDU.from_columns([qsostackedcol, qso_zcol, qso_sncol, qso_gczcol, qso_gcnamecol])
 
 
         primary = fits.PrimaryHDU()

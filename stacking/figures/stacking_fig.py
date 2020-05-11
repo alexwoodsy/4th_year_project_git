@@ -16,7 +16,7 @@ def findval(array,val):
 
 #read ion stacked data:
 runsavename = 'max_med_Allcarla'
-print(np.random.random(1))
+
 
 inname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'
 
@@ -27,6 +27,10 @@ stacklen = len(stackdata)
 qsonumber = len(qsodata)
 print(qsonumber)
 carlanumber = len(carladata)
+
+c = 299792.458
+
+
 
 wlen = stackdata.field(0)
 vrel = stackdata.field(1)
@@ -104,9 +108,56 @@ ax0.legend((line0, line1), ('mean', 'median'), loc='lower left')
 fig.text(0.5, 0.04, r'$\delta$v ($kms^{-1})$', ha='center', va='center')
 fig.text(0.06, 0.5, r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$', ha='center', va='center', rotation='vertical')
 
+# remove vertical gap between subplots
+plt.subplots_adjust(hspace=.0)
+
+
+#vrel binned pixels:
+binsize = 200
+vrelbins = np.arange(np.around(vrel[0],-1), np.around(vrel[-1],-1),binsize)
+vrelbins = vrelbins[1:]
+binind = np.zeros(len(vrelbins)).astype(int)
+meanbinned = np.zeros(len(vrelbins))
+medbinned = np.zeros(len(vrelbins))
+
+step =0
+for i in range(0,len(vrelbins)):
+    binind = findval(vrel, vrelbins[i])
+    meanbinned[i] = np.mean(mean[step:binind])
+    medbinned[i] = np.median(med[step:binind])
+    step = binind
+
+fig = plt.figure('vrel_binned')
+# set height ratios for sublots
+gs = plt.GridSpec(2, 1, height_ratios=[1, 1])
+
+# the fisrt subplot
+ax0 = plt.subplot(gs[0])
+#ax0.set_yscale("log")
+line0, = ax0.step(vrelbins, meanbinned, color='r')
+ax0.set_ylim([0, 1.5])
+ax0.set_xlim([-3000, 3000])
+
+#the second subplot
+ax1 = plt.subplot(gs[1], sharex = ax0, sharey = ax0)
+line1, = ax1.step(vrelbins, medbinned, color='b')
+plt.setp(ax0.get_xticklabels(), visible=False)
+# remove last tick label for the second subplot
+yticks = ax1.yaxis.get_major_ticks()
+yticks[-1].label1.set_visible(False)
+# put leg on first subplot
+ax0.legend((line0, line1), ('mean', 'median'), loc='lower left')
+
+#labels
+# Set common labels
+fig.text(0.5, 0.04, r'$\delta$v ($kms^{-1})$', ha='center', va='center')
+fig.text(0.06, 0.5, r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$', ha='center', va='center', rotation='vertical')
 
 # remove vertical gap between subplots
 plt.subplots_adjust(hspace=.0)
+
+
+
 
 
 

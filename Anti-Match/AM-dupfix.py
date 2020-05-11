@@ -70,4 +70,4 @@ metadata = fits.BinTableHDU.from_columns([qsonamecol ,racol ,deccol ,platecol ,m
 primary = fits.PrimaryHDU()
 hdul = fits.HDUList([primary, metadata])
 
-hdul.writeto('Anti-Match/AM-nodups.fits',overwrite = True)
+#hdul.writeto('Anti-Match/AM-nodups.fits',overwrite = True)
