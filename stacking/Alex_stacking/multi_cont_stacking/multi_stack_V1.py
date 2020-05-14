@@ -69,7 +69,7 @@ for i in range(0,carlalen):
     carlanames = str(carladata[i][0])
     overdensity[i] = carladata[i][6]
     for k in range(0,fitlen):
-        if carlanames ==  metagcname[k] and overdensity[i] >= 5: #add conditional for overdendity etc.. here
+        if carlanames ==  metagcname[k]:# and overdensity[i] >= 5: #add conditional for overdendity etc.. here
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames)
@@ -92,6 +92,9 @@ for i in range(0,carlalen):
 
 ########################################################
 
+###--strong absorver found in rad binning 200 arcsecs around WN_J1115p5016---###
+#carlamatch = ['WN_J1115p5016']
+
 carlamatchlen = len(carlamatch)
 
 
@@ -99,16 +102,16 @@ carlamatchlen = len(carlamatch)
 #################debugging selection parameters parameters:########################################
 chooselee = False #select leed fitting
 speccut = True #cuts our spec in the same way lee has
-showerror = False #see continuum fits + inividiual spec stack info
+showerror = True #see continuum fits + inividiual spec stack info
 ###############------Radial Binning------##################
-rinterval = 4000
-rend = 4000
+rinterval = 400
+rend = 400
 ###############------carla selection ------##################
 carlastackingtotal = carlamatchlen #all carla
 #carlastackingtotal = 100 #carla subset
 ##############-------Run saving filename (choose accroding to stack info) ------##########
-runsavename = 'max_med_od5'
-saveoutput = True
+runsavename = 'max_med_400bin'
+saveoutput = False
 ###################################################################################################
 
 

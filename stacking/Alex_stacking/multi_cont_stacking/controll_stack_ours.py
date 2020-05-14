@@ -19,7 +19,7 @@ def findval(array,val):
 
 #################debugging selection parameters parameters:########################################
 ##########-----input stack -------###################################################
-runsavename = 'max_med_1000bin'
+runsavename = 'max_med_200bin'
 ########---show stacking outpit-------#####################################################
 showerror = False #see continuum fits + inividiual spec stack info
 #################------save controll stack data:-----------########################################

@@ -72,9 +72,7 @@ plt.step(bins+binwidth,stack_zbincounts/np.max(stack_zbincounts),label='stack di
 
 #bin gc z info:
 gcbins = np.arange(zmin,zmax,binwidth)
-print(gcbins)
-gczbinsinds = np.digitize(qso_gcz, gcbins) 
-print(gczbinsinds)
+gczbinsinds = np.digitize(qso_gcz, gcbins)
 stack_gczbincounts = np.bincount(gczbinsinds, minlength=len(gcbins))
 plt.step(gcbins+binwidth,stack_gczbincounts/np.max(stack_gczbincounts),label='stack gc dist')
 
