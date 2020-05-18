@@ -83,7 +83,7 @@ gs = plt.GridSpec(3, 1, height_ratios=[1, 1, 1])
 ax0 = plt.subplot(gs[0])
 #ax0.set_yscale("log")
 line0, = ax0.plot(wlen, flux)
-name0 = ax0.text(8750,140,sdssspecname)
+name0 = ax0.text(8950,140,sdssspecname)
 z0 = ax0.text(9500,120,r'z = '+str(z))
 
 #second
@@ -114,7 +114,7 @@ max_medcontfit = data.field(6)
 contfit = max_medcontfit
 
 metadata = fits.getdata(specdirectory,ext=2)
-z = np.round(metadata[0][0],3)
+z = np.round(metadata[0][0],2)
 
 
 if speccut == True: #cut spec to same length as lee (1030 to 1600 in rest frame)
@@ -134,8 +134,10 @@ normspec = flux/contfit
 ax1 = plt.subplot(gs[1], sharex = ax0)
 #ax0.set_yscale("log")
 line1, = ax1.plot(wlen, flux)
-name1 = ax1.text(8665 ,11,sdssspecname)
+name1 = ax1.text(8865 ,11,sdssspecname)
 z1 = ax1.text(9500,8.5,r'z = '+str(z))
+ax1.set_ylabel(r'$F$ $(10^{-17} $erg$ s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+
 
 
 
@@ -188,18 +190,19 @@ normspec = flux/contfit
 
 ax2 = plt.subplot(gs[2], sharex = ax0)
 line2, = ax2.plot(wlen, flux)
-name2 = ax2.text(8665,25,sdssspecname)
+name2 = ax2.text(8865,25,sdssspecname)
 z2 = ax2.text(9500,21,r'z = '+str(z))
+ax2.set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
 # remove last tick label for the second subplot
-yticks = ax1.yaxis.get_major_ticks()
-yticks[-1].label1.set_visible(False)
+# yticks = ax1.yaxis.get_major_ticks()
+# yticks[-1].label1.set_visible(False)
 # put leg on first subplot
 #ax0.legend((line0, line1), ('mean', 'median'), loc='lower left')
 
 #labels
 # Set common labels
-fig.text(0.5, 0.03, r'{$\lambda$ ($\mathrm{\AA}$)', ha='center', va='center')
-fig.text(0.05, 0.5, r'$F$ $(10^{-17} $erg$ s^{-1}cm^{-2}\mathrm{\AA}^{-1})$', ha='center', va='center', rotation='vertical')
+#fig.text(0.5, 0.03, r'{$\lambda$ ($\mathrm{\AA}$)', ha='center', va='center')
+#fig.text(0.05, 0.5, r'$F$ $(10^{-17} $erg$ s^{-1}cm^{-2}\mathrm{\AA}^{-1})$', ha='center', va='center', rotation='vertical')
 # remove vertical gap between subplots
 plt.xlim(wlen[0], wlen[-1])
 plt.subplots_adjust(hspace=.0)

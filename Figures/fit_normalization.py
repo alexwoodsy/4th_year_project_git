@@ -95,12 +95,7 @@ for i in range(0,fitlen):
 
 
 
-fig = plt.figure('fitting')
-# set height ratios for sublots
-gs = plt.GridSpec(3, 2, height_ratios=[1, 1, 1])
-plotcounter = 0
-
-for i in [0,10,1000]: #+10,1000
+for i in [0]: #+10,1000
     lyalpha = metalyalpha[i]
     redshift = metaredshift[i]
     lyalphaind = int(metalyalphaind[i])
@@ -289,117 +284,32 @@ for i in [0,10,1000]: #+10,1000
     maxcontfit = signal.savgol_filter(maxcontfit, smoothwin,3)
     max_medcontfit = signal.savgol_filter(max_medcontfit, smoothwin,3)
 
-    #topleft
-    if plotcounter == 0:
-        ax0 = plt.subplot(gs[plotcounter])
-        ax0.plot(wlen, flux)
-        ax0.plot(wlen, medcontfit)
-        ax0.plot(medintervalwlen, medwinpeak,'^',color='orange')
-        ax0.text(5250,135,sdssspecname)
-        ax0.text(5250,115,r'z = '+str(np.round(redshift,2)))
-        #ax0.plot(wlenline, fluxline,'.')
-
-        axr = plt.subplot(gs[plotcounter+1],sharex = ax0, sharey = ax0)
-        axr.plot(wlen, flux)
-        axr.plot(wlen, maxcontfit)
-        axr.plot(maxintervalwlen, maxwinpeak,'^')
-        axr.text(5300,135,sdssspecname)
-        axr.text(5300,115,r'z = '+str(np.round(redshift,2)))
-        #axr.plot(wlenline, fluxline,'.')
-    else:
-        axl = plt.subplot(gs[plotcounter],sharex = ax0)
-        axl.plot(wlen, flux)
-        axl.plot(wlen, medcontfit)
-        axl.plot(medintervalwlen, medwinpeak,'^',color='orange')
-        #axl.plot(wlenline, fluxline,'.')
-
-        axr = plt.subplot(gs[plotcounter+1],sharex = ax0, sharey = axl)
-        axr.plot(wlen, flux)
-        axr.plot(wlen, maxcontfit)
-        axr.plot(maxintervalwlen, maxwinpeak,'^')
-        #axr.plot(wlenline, fluxline,'.')
-
-        if plotcounter == 2:
-            axl.text(3850,12,sdssspecname)
-            axl.text(3850,10,r'z = '+str(np.round(redshift,2)))
-            axr.text(3850,12,sdssspecname)
-            axr.text(3850,10,r'z = '+str(np.round(redshift,2)))
-
-            axl.set_ylabel(r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-
-        else:
-            axl.text(5250,25,sdssspecname)
-            axl.text(5250,21,r'z = '+str(np.round(redshift,2)))
-            axr.text(5250,25,sdssspecname)
-            axr.text(5250,21,r'z = '+str(np.round(redshift,2)))
-
-            axl.set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-            axr.set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
 
 
+fig = plt.figure('fitting')
+# set height ratios for sublots
+gs = plt.GridSpec(3, 1, height_ratios=[1, 1, 1])
+# the fisrt subplot
+ax0 = plt.subplot(gs[0])
+#ax0.set_yscale("log")
+ax0.plot(wlen, mednorm)
 
-    plotcounter = plotcounter + 2
+
+#name0 = ax0.text(8750,140,sdssspecname)
+#z0 = ax0.text(9500,120,r'z = '+str(z))
+ax1 = plt.subplot(gs[1], sharex = ax0)
+ax1.plot(wlen, maxnorm)
+ax1.set_ylabel(r'$\tilde{F}$')
+
+ax2 = plt.subplot(gs[2], sharex = ax0)
+ax2.plot(wlen, max_mednorm)
+ax2.set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
 
 # remove vertical gap between subplots
 plt.subplots_adjust(hspace=.0)
-
 #labels
 # Set common labels
-#fig.text(0.555, 0.03, r'$\lambda$ ($\mathrm{\AA}$)', ha='center', va='center')
-#right
-#fig.text(0.58, 0.5, r'$\tilde{F}$', ha='center', va='center', rotation='vertical')
-#left
+#fig.text(0.5, 0.03, r'$\lambda$ ($\mathrm{\AA}$)', ha='center', va='center')
+#fig.text(0.05, 0.5, r'$\tilde{F}$', ha='center', va='center', rotation='vertical')
 #fig.text(0.05, 0.5, r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$', ha='center', va='center', rotation='vertical')
 plt.show()
-
-    #For plotting all in 1 go
-    # fig = plt.figure('fitting')
-    # # set height ratios for sublots
-    # gs = plt.GridSpec(3, 2, height_ratios=[1, 1, 1])
-    # # the fisrt subplot
-    # ax00 = plt.subplot(gs[0])
-    # #ax0.set_yscale("log")
-    # ax00.plot(wlen, flux)
-    # ax00.plot(wlen, maxcontfit)
-    # ax00.plot(maxintervalwlen, maxwinpeak,'*')
-    # ax00.plot(wlenline, fluxline,'.')
-    # #name0 = ax0.text(8750,140,sdssspecname)
-    # #z0 = ax0.text(9500,120,r'z = '+str(z))
-    # ax01 = plt.subplot(gs[2], sharex = ax00)
-    # ax01.plot(wlen, flux)
-    # ax01.plot(wlen, medcontfit)
-    # ax01.plot(medintervalwlen, medwinpeak,'*')
-    # ax01.plot(wlenline, fluxline,'.')
-    #
-    # ax02 = plt.subplot(gs[4], sharex = ax00)
-    # ax02.plot(wlen, flux)
-    # ax02.plot(wlen, max_medcontfit)
-    # ax02.plot(max_medintervalwlen, max_medwinpeak,'*')
-    # ax02.plot(wlenline, fluxline,'.')
-    #
-    # # the fisrt subplot
-    # ax10 = plt.subplot(gs[1], sharex = ax00)
-    # #ax0.set_yscale("log")
-    # ax10.plot(wlen, maxnorm)
-    #
-    #
-    # #name0 = ax0.text(8750,140,sdssspecname)
-    # #z0 = ax0.text(9500,120,r'z = '+str(z))
-    # ax11 = plt.subplot(gs[3], sharex = ax10)
-    # ax11.plot(wlen, mednorm)
-    #
-    #
-    # ax12 = plt.subplot(gs[5], sharex = ax10)
-    # ax12.plot(wlen, max_mednorm)
-    #
-    #
-    # # remove vertical gap between subplots
-    # plt.subplots_adjust(hspace=.0)
-    # #labels
-    # # Set common labels
-    # fig.text(0.5, 0.03, r'$\lambda$ ($\mathrm{\AA}$)', ha='center', va='center')
-    # #right
-    # fig.text(0.58, 0.5, r'$\tilde{F}$', ha='center', va='center', rotation='vertical')
-    # #left
-    # fig.text(0.05, 0.5, r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$', ha='center', va='center', rotation='vertical')
-    # plt.show()
