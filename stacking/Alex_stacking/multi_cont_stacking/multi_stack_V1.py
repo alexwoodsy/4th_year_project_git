@@ -69,7 +69,7 @@ for i in range(0,carlalen):
     carlanames = str(carladata[i][0])
     overdensity[i] = carladata[i][6]
     for k in range(0,fitlen):
-        if carlanames ==  metagcname[k]:# and overdensity[i] >= 5: #add conditional for overdendity etc.. here
+        if carlanames ==  metagcname[k]:# and overdensity[i] < 2: #add conditional for overdendity etc.. here
             c = c + 1
     if c > 0:
         carlamatch.append(carlanames)
@@ -100,17 +100,17 @@ carlamatchlen = len(carlamatch)
 
 
 #################debugging selection parameters parameters:########################################
-chooselee = True #select leed fitting
+chooselee = False #select leed fitting
 speccut = True #cuts our spec in the same way lee has
 showerror = False #see continuum fits + inividiual spec stack info
 ###############------Radial Binning------##################
-rstart = 800
-rend = 1000
+rstart = 0
+rend = 200
 ###############------carla selection ------##################
 carlastackingtotal = carlamatchlen #all carla
 #carlastackingtotal = 10 #carla subset
 ##############-------Run saving filename (choose accroding to stack info) ------##########
-runsavename = 'lees_800to1000bin'
+runsavename = 'ours_0to200bin_sn_2'
 saveoutput = True
 ###################################################################################################
 
@@ -202,7 +202,7 @@ for carlaselect in carlarange: #all change to - matchlen
             # var = 1/(olddata.field(3))
 
             zlims = np.array([gcredshift+0.05 , gcredshift + 4.5])
-            stonlim = 4
+            stonlim = 2
             pw = 0
             #check fit can be added to stack:
             if leecheck == 0 and chooselee == True: #check lee fit is in sample

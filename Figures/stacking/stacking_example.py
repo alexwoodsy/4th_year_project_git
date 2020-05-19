@@ -23,6 +23,7 @@ for i in [0,10,1000]:
     specnames.append(name)
 
 specstackinds = [0,1,2]
+
 ######-----stacking code----#######
 fillval = np.nan
 runlen = len(specstackinds)
@@ -48,16 +49,17 @@ for ind in specstackinds:
     contfit = specdata.field(6)
     specmetadata = fits.getdata('Fitted Spectra/'+specnames[ind],ext=2)#import fits image
     redshift = specmetadata[0][0]
+    gcredshift = redshift+1
 
-    # cutstart = findval(wlen,(1030*(1+redshift)))
-    # cutend = findval(wlen,(1600*(1+redshift)))
-    # if cutend != 0 and cutstart != 0:
-    #     cut = np.arange(cutstart,cutend)
-    #     contfit = contfit[cut]
-    #     flux = flux[cut]
-    #     wlen = wlen[cut]
+    cutstart = findval(wlen,(1030*(1+gcredshift)))
+    cutend = findval(wlen,(1600*(1+gcredshift)))
+    if cutend != 0 and cutstart != 0:
+        cut = np.arange(cutstart,cutend)
+        contfit = contfit[cut]
+        flux = flux[cut]
+        wlen = wlen[cut]
 
-    wlenshift = wlen/(1+redshift) #+np.random.random(1)-0.5
+    wlenshift = wlen/(1+gcredshift) #+np.random.random(1)-0.5
     normspec = flux/contfit
 
     # plt.plot(wlenshift,flux)

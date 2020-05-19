@@ -176,10 +176,35 @@ fig.text(0.06, 0.5, r'$F$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$', h
 # remove vertical gap between subplots
 plt.subplots_adjust(hspace=.0)
 
+###absorbtion line fitting####
+#fit controll level
+def polynomial(x, a, b):
+    return a*(x)+b
+
+contdatarange = np.arange(findval(vrelbins,-1000), findval(vrelbins,1000))
+contpopt, pcov = cf(polynomial, vrelbins[contdatarange], controlmeanbinned[contdatarange], bounds =([-100,-1000],[100,1000]))
+conta, contb = contpopt
+control_fit = polynomial(vrelbins[contdatarange], *contpopt)
+control_level = 1
 
 
+#fitting needs initial data so extract data about abs line
+def guassian(x, amp, mean, std):
+    return amp*np.exp(-((x-mean)**2)/(2*(std)**2))
 
+figabs, ax = plt.subplots(1,1,num='Absorption line fitting')
+datarange = np.arange(findval(vrelbins,-1000), findval(vrelbins,1000))
+popt, pcov = cf(guassian, vrelbins[datarange], control_fit-meanbinned[datarange], bounds =([-1,-700,0],[1.5,700,1000]))
+meanamp, meanmean, meanstd = popt
+ax.step(vrelbins, meanbinned,label='stack data')
+ax.plot(vrelbins[datarange], control_fit-guassian(vrelbins[datarange], *popt), 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
 
+ax.step(vrelbins, controlmeanbinned,label='control data')
+ax.plot(vrelbins[contdatarange], control_fit, 'b-',label='fitting parmaters: a=%5.3f, b=%5.3f' % tuple(contpopt))
+
+ax.set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
+ax.set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
+ax.legend()
 
 
 plt.show()
