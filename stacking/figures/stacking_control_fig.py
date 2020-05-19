@@ -15,7 +15,7 @@ def findval(array,val):
     return ind
 
 #read in stacked data:
-runsavename = 'max_med_Allcarla'
+runsavename = 'ours_200to400bin'
 
 inname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'
 
@@ -127,7 +127,7 @@ plt.subplots_adjust(hspace=.0)
 
 
 #vrel binned pixels:
-binsize = 500
+binsize = 100
 vrelbins = np.arange(np.around(vrel[0],-1), np.around(vrel[-1],-1),binsize)
 vrelbins = vrelbins[1:]
 binind = np.zeros(len(vrelbins)).astype(int)

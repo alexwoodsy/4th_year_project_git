@@ -213,7 +213,7 @@ for carla in carlarange:
         gclyalpha = (1+gcredshift)*1215.67
 
         zlims = np.array([gcredshift+0.05 , gcredshift + 2])
-        stonlim = 5
+        stonlim = 4
         pw = 0
 
 
@@ -226,10 +226,10 @@ for carla in carlarange:
             stackstatus.append('zerror')
             if showerror == True:
                 print('zlim warning!: '+spec+' z = '+ str(redshift) +' below not in limits (S/N = '+ str(stonall) +')')
-        elif stonall < stonlim:
+        elif stonforest < stonlim:
             stackstatus.append('stonerror')
             if showerror == True:
-                print('S/N warning!: '+spec+' S/N = '+ str(stonall) +' too low (z = '+ str(redshift) +')')
+                print('S/N warning!: '+spec+' S/N = '+ str(stonforest) +' too low (z = '+ str(redshift) +')')
         elif gclyalpha - wlen[0] <= pw:
             stackstatus.append('gcerror')
             if showerror == True:
@@ -264,7 +264,7 @@ for carla in carlarange:
 
             qsostacked.append(am_names[ind])
             qsostacked_z = np.append(qsostacked_z, redshift)
-            qsostacked_sn = np.append(qsostacked_sn, stonall)
+            qsostacked_sn = np.append(qsostacked_sn, stonforest)
 
     #output
     print('stacking attempted for '+ str(len(stackstatus)) + ' spectra')

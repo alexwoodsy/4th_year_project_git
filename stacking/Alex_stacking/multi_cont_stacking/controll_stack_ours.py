@@ -19,13 +19,13 @@ def findval(array,val):
 
 #################debugging selection parameters parameters:########################################
 ##########-----input stack -------###################################################
-runsavename = 'max_med_200bin'
+runsavename = 'ours_800to1000bin'
 ########---show stacking outpit-------#####################################################
 showerror = False #see continuum fits + inividiual spec stack info
 #################------save controll stack data:-----------########################################
 saveoutput = True
 #######-amount of spectra to attempt to stack based on input distro-###############################
-binmult = 50 #multiplier of spec in each input stack bin to take from the anitmatch same
+binmult = 10 #multiplier of spec in each input stack bin to take from the anitmatch same
 ###################################################################################################
 
 
@@ -43,7 +43,8 @@ qso_gcname = qsodata.field(4)
 
 
 #read in antimatchfiles metadata
-folderpath = 'E:/AM-Prefitted Spectra/'
+#folderpath = 'E:/AM-Prefitted Spectra/'#BIG PC ROUTE
+folderpath = 'C:/Users/alexw/Spectra_files/AM-Prefitted Spectra/AM-Prefitted Spectra/' #surface route
 
 amdata = fits.getdata('Anti-Match/AM-PLUS_SN.fits',ext=1)#import fits image
 amlen = len(amdata)#
@@ -211,7 +212,7 @@ for carla in carlarange:
         gclyalpha = (1+gcredshift)*1215.67
 
         zlims = np.array([gcredshift+0.05 , gcredshift + 2])
-        stonlim = 5
+        stonlim = 4
         pw = 0
 
 
@@ -224,10 +225,10 @@ for carla in carlarange:
             stackstatus.append('zerror')
             if showerror == True:
                 print('zlim warning!: '+spec+' z = '+ str(redshift) +' below not in limits (S/N = '+ str(stonall) +')')
-        elif stonall < stonlim:
+        elif stonforest < stonlim:
             stackstatus.append('stonerror')
             if showerror == True:
-                print('S/N warning!: '+spec+' S/N = '+ str(stonall) +' too low (z = '+ str(redshift) +')')
+                print('S/N warning!: '+spec+' S/N = '+ str(stonforest) +' too low (z = '+ str(redshift) +')')
         elif gclyalpha - wlen[0] <= pw:
             stackstatus.append('gcerror')
             if showerror == True:
@@ -265,7 +266,7 @@ for carla in carlarange:
 
             qsostacked.append(am_names[ind])
             qsostacked_z = np.append(qsostacked_z, redshift)
-            qsostacked_sn = np.append(qsostacked_sn, stonall)
+            qsostacked_sn = np.append(qsostacked_sn, stonforest)
 
     #output
     print('stacking attempted for '+ str(len(stackstatus)) + ' spectra')
@@ -330,6 +331,8 @@ for carla in carlarange:
 
 
 #average togther carla stacks:
+print('total number of anti-mtach spectra = '+ str(len(qsostacked)))
+
 
 gcstart = (np.abs(wlenmultistack - gcwlenmin)).argmin() +10 #tolerance for error in exact start
 gcend = (np.abs(wlenmultistack - gcwlenmax)).argmin() -10
