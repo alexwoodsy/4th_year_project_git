@@ -15,7 +15,7 @@ def findval(array,val):
     return ind
 
 #read in stacked data:
-runsavename = 'ours_200to400bin'
+runsavename = 'lees_ALLbin'
 
 inname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'
 

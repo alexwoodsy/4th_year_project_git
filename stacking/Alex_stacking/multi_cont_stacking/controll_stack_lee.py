@@ -19,13 +19,13 @@ def findval(array,val):
 
 #################debugging selection parameters parameters:########################################
 ##########-----input stack -------###################################################
-runsavename = 'lees_800to1000bin'
+runsavename = 'lees_ALLbin'
 ########---show stacking outpit-------#####################################################
 showerror = False #see continuum fits + inividiual spec stack info
 #################------save controll stack data:-----------########################################
 saveoutput = True
 #######-amount of spectra to attempt to stack based on input distro-###############################
-binmult = 20 #multiplier of spec in each input stack bin to take from the anitmatch same
+binmult = 10 #multiplier of spec in each input stack bin to take from the anitmatch same
 ###################################################################################################
 
 
@@ -83,7 +83,7 @@ amz_end = findval(am_z,zmax) # get cut val
 am_zorderind = am_zorderind[findval(am_zorderind,amz_start):findval(am_zorderind,amz_end)] #find cut val in orderd inds then trim the ordered inds and apply:
 
 am_zcutdown = am_z[am_zorderind] #apply the cut
-am_zbinsinds = np.digitize(am_zcutdown, bins) #bin each value in am_zcutdown belongs too
+am_zbinsinds = np.digitize(am_zcutdown, bins) -1 #bin each value in am_zcutdown belongs too
 print(am_zbinsinds)
 am_zbincounts = np.bincount(am_zbinsinds, minlength=len(bins))
 print(bins)
