@@ -105,12 +105,12 @@ speccut = True #cuts our spec in the same way lee has
 showerror = False #see continuum fits + inividiual spec stack info
 ###############------Radial Binning------##################
 rstart = 0
-rend = 200
+rend = 400
 ###############------carla selection ------##################
 carlastackingtotal = carlamatchlen #all carla
 #carlastackingtotal = 10 #carla subset
 ##############-------Run saving filename (choose accroding to stack info) ------##########
-runsavename = 'ours_0to200bin_sn_2'
+runsavename = 'ours_0to400bin_sn_2'
 saveoutput = True
 ###################################################################################################
 
