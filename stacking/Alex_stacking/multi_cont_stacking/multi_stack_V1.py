@@ -105,12 +105,12 @@ speccut = True #cuts our spec in the same way lee has
 showerror = False #see continuum fits + inividiual spec stack info
 ###############------Radial Binning------##################
 rstart = 0
-rend = 200
+rend = 1000
 ###############------carla selection ------##################
 carlastackingtotal = carlamatchlen #all carla
 #carlastackingtotal = 10 #carla subset
 ##############-------Run saving filename (choose accroding to stack info) ------##########
-runsavename = 'ours_0to200bin_sn_2'
+runsavename = 'ours_0to1000bin'
 saveoutput = True
 ###################################################################################################
 
@@ -202,7 +202,7 @@ for carlaselect in carlarange: #all change to - matchlen
             # var = 1/(olddata.field(3))
 
             zlims = np.array([gcredshift+0.05 , gcredshift + 4.5])
-            stonlim = 2
+            stonlim = 4
             pw = 0
             #check fit can be added to stack:
             if leecheck == 0 and chooselee == True: #check lee fit is in sample
