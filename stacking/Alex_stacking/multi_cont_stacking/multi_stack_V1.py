@@ -100,25 +100,17 @@ carlamatchlen = len(carlamatch)
 
 
 #################debugging selection parameters parameters:########################################
-chooselee = False #select leed fitting
+chooselee = True #select leed fitting
 speccut = True #cuts our spec in the same way lee has
 showerror = False #see continuum fits + inividiual spec stack info
 ###############------Radial Binning------##################
 rstart = 0
-<<<<<<< HEAD
-rend = 400
-=======
 rend = 1000
->>>>>>> c20566289e93d95f4cae4c84a06271c58b26bcfc
 ###############------carla selection ------##################
 carlastackingtotal = carlamatchlen #all carla
 #carlastackingtotal = 10 #carla subset
 ##############-------Run saving filename (choose accroding to stack info) ------##########
-<<<<<<< HEAD
-runsavename = 'ours_0to400bin_sn_2'
-=======
-runsavename = 'ours_0to1000bin'
->>>>>>> c20566289e93d95f4cae4c84a06271c58b26bcfc
+runsavename = 'lees_0to1000bin'
 saveoutput = True
 ###################################################################################################
 
