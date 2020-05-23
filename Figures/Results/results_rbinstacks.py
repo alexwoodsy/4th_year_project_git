@@ -85,7 +85,7 @@ for runsavename in runs:
         controlmedbinned[i] = np.median(controlmed[step:binind])
         step = binind
 
-    if runsavename == runs[0]:
+
         oursvrelbins = vrelbins
         oursmeanbinned = meanbinned
         oursmedbinned = medbinned
@@ -94,15 +94,7 @@ for runsavename in runs:
         oursqsonumber = qsonumber
         ourscarlanumber = carlanumber
         ourscontrolqsonumber = controlqsonumber
-    elif runsavename == runs[1]:
-        leesvrelbins = vrelbins
-        leesmeanbinned = meanbinned
-        leesmedbinned = medbinned
-        leescontrolmeanbinned = controlmeanbinned
-        leescontrolmedbinned = controlmedbinned
-        leesqsonumber = qsonumber
-        leescarlanumber = carlanumber
-        leescontrolqsonumber = controlqsonumber
+
 
 
 
