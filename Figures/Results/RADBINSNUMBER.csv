@@ -1,0 +1,6 @@
+﻿,$N_{QSO}^{LOS}$,$N_{QSO}^{Control}$,$N_{CARLA}
+"'$R_{\perp}=[0,200]$ (arcseconds)",1,17,1
+"$R_{\perp}=[200,400]$ (arcseconds)",8,62,8
+"$R_{\perp}=[400,600]$ (arcseconds)",12,90,11
+"$R_{\perp}=[600,800]$ (arcseconds)",20,69,18
+"$R_{\perp}=[800,1000]$ (arcseconds)",30,120,26

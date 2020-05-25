@@ -8,7 +8,7 @@ import os, time
 #import fitting
 import sys
 
-plt.style.use('mystyle_long')
+plt.style.use('mystyle')
 
 
 def findval(array,val):
@@ -19,14 +19,14 @@ def findval(array,val):
 #plot initialisation:
 fig = plt.figure('vrel_binned')
 # set height ratios for sublots
-gs = plt.GridSpec(5, 2, height_ratios=[1, 1, 1, 1, 1])
+gs = plt.GridSpec(2, 2, height_ratios=[1, 1])
 
 
 plotcounter = 0
 namecounter = 0
 
-runs = ['ours_0to200bin','ours_200to400bin','ours_400to600bin','ours_600to800bin','ours_800to1000bin']
-panelname = [r'$R_{\perp}=[0,200]$ (arcseconds)',r'$R_{\perp}=[200,400]$ (arcseconds)',r'$R_{\perp}=[400,600]$ (arcseconds)',r'$R_{\perp}=[600,800]$ (arcseconds)',r'$R_{\perp}=[800,1000]$ (arcseconds)']
+runs = ['ours_200to400bin','ours_200to400bin_sn_2']
+panelname = [r'S/N >= 4',r'S/N >= 2']
 #read in stacked data:
 for runsavename in runs:
     inname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'
@@ -46,7 +46,7 @@ for runsavename in runs:
 
 
     #read in controll stack data:
-    inname = 'stacking/figures/Stacking data/' + runsavename+ '(control).fits'
+    inname = 'stacking/figures/Stacking data/' + runs[0]+ '(control).fits'
 
     controlstackdata = fits.getdata(inname,ext=1)
     controlqsodata =fits.getdata(inname,ext=2)
@@ -163,14 +163,11 @@ for runsavename in runs:
         else:
             axl.set_xlabel(r'$\delta v$ (km s$^{-1})$')
             axr.set_xlabel(r'$\delta v$ (km s$^{-1})$')
-    #
-    if namecounter == 2:
-        axl.set_ylabel(r'$\tilde{F}$')
 
     plotcounter = plotcounter + 2
     namecounter = namecounter +1
 plt.subplots_adjust(hspace=.0)
-#fig.text(0.05, 0.55, r'$\tilde{F}$', ha='center', va='center', rotation='vertical')
+fig.text(0.05, 0.55, r'$\tilde{F}$', ha='center', va='center', rotation='vertical')
 plt.show()
 #
 # # the fisrt subplot
