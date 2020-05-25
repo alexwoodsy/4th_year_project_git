@@ -19,7 +19,7 @@ def findval(array,val):
 
 #################debugging selection parameters parameters:########################################
 ##########-----input stack -------###################################################
-runsavename = 'lees_0to1000bin'
+runsavename = 'ours_200to400bin_odl2_sn2'
 ########---show stacking outpit-------#####################################################
 showerror = False #see continuum fits + inividiual spec stack info
 #################------save controll stack data:-----------########################################
@@ -43,8 +43,8 @@ qso_gcname = qsodata.field(4)
 
 
 #read in antimatchfiles metadata
-folderpath = 'E:/AM-Prefitted Spectra/'#BIG PC ROUTE
-#folderpath = 'C:/Users/alexw/Spectra_files/AM-Prefitted Spectra/AM-Prefitted Spectra/' #surface route
+#folderpath = 'E:/AM-Prefitted Spectra/'#BIG PC ROUTE
+folderpath = 'C:/Users/alexw/Spectra_files/AM-Prefitted Spectra/AM-Prefitted Spectra/' #surface route
 
 amdata = fits.getdata('Anti-Match/AM-PLUS_SN.fits',ext=1)#import fits image
 amlen = len(amdata)#
