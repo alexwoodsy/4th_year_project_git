@@ -19,14 +19,14 @@ def findval(array,val):
 #plot initialisation:
 fig = plt.figure('vrel_binned')
 # set height ratios for sublots
-gs = plt.GridSpec(2, 2, height_ratios=[1, 1])
+gs = plt.GridSpec(2, 3, height_ratios=[1, 1])
 
 
 plotcounter = 0
 namecounter = 0
 
-runs = ['ours_200to400bin','ours_200to400bin_sn_2']
-panelname = [r'S/N $\geq$ 4',r'S/N $\geq$ 2']
+runs = ['ours_200to400bin','ours_200to400bin_sn_2','ours_200to400bin_sn_1.5']
+panelname = [r'S/N $>$ 4',r'S/N $>$ 2',r'S/N $>$ 1.5']
 #read in stacked data:
 for runsavename in runs:
     inname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'
@@ -116,11 +116,11 @@ for runsavename in runs:
         axl0.plot(np.array([1,1]), np.array([-1,5]),'#FFA500', linestyle =':')
         axl0.step(vrelbins, meanbinned, color='#ff0000')
         axl0.step(vrelbins, controlmeanbinned, color='#00ff00')
-        axl0.text(-4000, 0.52,panelname[namecounter])
+        axl0.text(-3800, 0.52,panelname[namecounter])
 
 
 
-        axr0 = plt.subplot(gs[plotcounter+2],sharex = axl0, sharey = axl0, label=runsavename)
+        axr0 = plt.subplot(gs[plotcounter+3],sharex = axl0, sharey = axl0, label=runsavename)
         #ax0.set_yscale("log")
         #for line in vrelline: #plot em lines
         #    axr0.plot(np.array([line,line]),np.array([-1,5]),'#00ffff', linestyle =':')
@@ -131,8 +131,8 @@ for runsavename in runs:
         axr0.set_ylim([0.55, 1.05])
         axr0.set_xlim([-2500, 3000])
         axr0.text(-4000, 0.52,'$N_{QSO}^{LOS}$ = '+str(qsonumber))
-        axr0.text(-4000, 0.58,'$N_{CARLA}$ = '+str(carlanumber))
-        axr0.text(-4000, 0.64,'$N_{QSO}^{Control}$ = '+str(controlqsonumber))
+        axr0.text(-4000, 0.6,'$N_{CARLA}$ = '+str(carlanumber))
+        axr0.text(600, 0.52,'$N_{QSO}^{Control}$ = '+str(controlqsonumber))
         axr0.set_xlabel(r'$\delta v$ (km s$^{-1})$')
     else:
         axl = plt.subplot(gs[plotcounter],sharex = axl0, sharey = axl0, label=runsavename)
@@ -143,14 +143,14 @@ for runsavename in runs:
         axl.plot(np.array([1,1]), np.array([-1,5]),'#FFA500', linestyle =':')
         axl.step(vrelbins, meanbinned, color='#ff0000')
         axl.step(vrelbins, controlmeanbinned, color='#00ff00')
-        axl.text(-4000, 0.52,panelname[namecounter])
+        axl.text(-3800, 0.52,panelname[namecounter])
         if runsavename != runs[-1]: #
             yticks = axl.yaxis.get_major_ticks()
             xticks = axl.xaxis.get_major_ticks()
             yticks[-1].label1.set_visible(False)
             xticks[-1].label1.set_visible(False)
 
-        axr = plt.subplot(gs[plotcounter+2],sharex = axl0, sharey = axl0, label=runsavename)
+        axr = plt.subplot(gs[plotcounter+3],sharex = axl0, sharey = axl0, label=runsavename)
         #ax0.set_yscale("log")
         #for line in vrelline: #plot em lines
         #    axr.plot(np.array([line,line]),np.array([-1,5]),'#00ffff', linestyle =':')
@@ -159,8 +159,8 @@ for runsavename in runs:
         axr.step(vrelbins, medbinned, color='#0000ff')
         axr.step(vrelbins, controlmedbinned, color='#00ff00')
         axr.text(-4000, 0.52,'$N_{QSO}^{LOS}$ = '+str(qsonumber))
-        axr.text(-4000, 0.58,'$N_{CARLA}$ = '+str(carlanumber))
-        axr.text(-4000, 0.64,'$N_{QSO}^{Control}$ = '+str(controlqsonumber))
+        axr.text(-4000, 0.6,'$N_{CARLA}$ = '+str(carlanumber))
+        axr.text(300, 0.52,'$N_{QSO}^{Control}$ = '+str(controlqsonumber))
         axr.set_ylim([0.55, 1.05])
         axr.set_xlim([-2500, 3000])
         if runsavename != runs[-1]: #
@@ -175,7 +175,7 @@ for runsavename in runs:
     plotcounter = plotcounter + 1
     namecounter = namecounter +1
 plt.subplots_adjust(hspace=.0)
-fig.text(0.05, 0.55, r'$\tilde{F}$', ha='center', va='center', rotation='vertical')
+fig.text(0.02, 0.55, r'$\tilde{F}$', ha='center', va='center', rotation='vertical')
 plt.show()
 #
 # # the fisrt subplot
