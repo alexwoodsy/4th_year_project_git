@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.modeling import models, fitting
 from astropy.io import fits
-from scipy import interpolate, signal
+from scipy import interpolate, signal, integrate
 from scipy.optimize import curve_fit as cf
 import os, time
 #import fitting
@@ -25,8 +25,8 @@ def findval(array,val):
 plotcounter = 0
 namecounter = 0
 
-runs = ['ours_200to400bin']
-panelname = [r'S/N $>$ 4']
+runs = ['ours_200to400bin_sn_2']
+panelname = [r'$R_{\perp}=[200,400]$ (arcseconds)']
 #read in stacked data:
 for runsavename in runs:
     inname = 'stacking/figures/Stacking data/' + runsavename+ '.fits'
@@ -112,7 +112,7 @@ for runsavename in runs:
     def polynomial(x, a, b):
         return a*(x)+b
 
-    lower, upper = -2000, 2000 #range over which the fit takes place
+    lower, upper = -4000, 4000 #range over which the fit takes place
     plotdatarange = np.linspace(lower, upper,1000)
     contdatarange = np.arange(findval(vrelbins,lower), findval(vrelbins,upper))
     contpopt, pcov = cf(polynomial, vrelbins[contdatarange], controlmeanbinned[contdatarange], bounds =([-100,-1000],[100,1000]))
@@ -125,26 +125,37 @@ for runsavename in runs:
 
     figabs, ax = plt.subplots(1,1,num='Absorption line fitting')
     datarange = np.arange(findval(vrelbins,lower), findval(vrelbins,upper))
-    popt, pcov = cf(guassian, vrelbins[datarange], control_fit-meanbinned[datarange], bounds =([-1,-700,0],[1.5,700,1000]))
+    popt, pcov = cf(guassian, vrelbins[datarange], control_fit-meanbinned[datarange], bounds =([-1,-1500,0],[1.5,1500,1000]))
     meanamp, meanmean, meanstd = popt
-
     controlfitplot = polynomial(plotdatarange, *contpopt)
     guassianplot = guassian(plotdatarange, *popt)
 
     fittedline = controlfitplot-guassianplot
+    wlenbins = ((vrelbins+(binsize/2))/c)*lam_em + lam_em
+    wlenplotrange = (plotdatarange/c)*lam_em + lam_em
 
+    ax.step((vrelbins+(binsize/2)), meanbinned, color='#0000ff', label=panelname[namecounter])
+    ax.plot(plotdatarange, fittedline , '#ff0000',label='Gaussian fit')
 
-    ax.step(vrelbins, meanbinned,label='stack data')
-    ax.plot(plotdatarange, fittedline , 'r-',label='fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
+    ax.step((vrelbins+(binsize/2)), controlmeanbinned, color='#00ff00',label='Control')
+    ax.plot(plotdatarange, controlfitplot, '#FF1493', linestyle =':',linewidth=1.5,label='Control level fit')
 
-    ax.step(vrelbins, controlmeanbinned,label='control data')
-    ax.plot(plotdatarange, controlfitplot, 'b-',label='fitting parmaters: a=%5.3f, b=%5.3f' % tuple(contpopt))
-
-    ax.set_xlabel(r'$\lambda$ ($\mathrm{\AA}$)')
-    ax.set_ylabel(r'$<F>$ $(10^{-17}$ ergs $s^{-1}cm^{-2}\mathrm{\AA}^{-1})$')
-    ax.legend()
+    ax.set_xlabel(r'$\delta v$ (km s$^{-1})$')
+    ax.set_ylabel(r'$\tilde{F}$')
+    leg = plt.legend()
+    leg.get_frame().set_linewidth(0.0)
     ax.set_ylim([0.55, 1.05])
     ax.set_xlim([-2500, 3000])
+    #convert back to wavelength:
+    wlenrange = (plotdatarange/c)*lam_em + lam_em
+    area = integrate.simps(guassianplot, wlenrange)
+    width = area/meanamp
+    col_density = (1.84e14)*width
+    print('fitting parmaters: amp=%5.3f, mean=%5.3f, std=%5.3f' % tuple(popt))
+    print('equiv width = '+str(width))
+    print('dolumn density = '+"{:.2e}".format(col_density))
 
-
+    #plt.figure('test')
+    #plt.plot(wlenrange,guassianplot)
+    namecounter = namecounter + 1
 plt.show()

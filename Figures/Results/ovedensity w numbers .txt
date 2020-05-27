@@ -1,0 +1,14 @@
+ours_200to400bin_sn_2
+fitting parmaters: amp=0.218, mean=165.704, std=208.276
+equiv width = 2.117013638725571
+column density = 3.90e+14
+
+ours_200to400bin_odl2_sn2
+fitting parmaters: amp=0.204, mean=17.993, std=311.617
+equiv width = 3.167418924145661
+column density = 5.83e+14
+
+ours_200to400bin_odg2_sn2
+fitting parmaters: amp=0.339, mean=201.158, std=143.337
+equiv width = 1.4569473347126571
+column density = 2.68e+14
