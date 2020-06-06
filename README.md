@@ -14,7 +14,7 @@ aims, data and method for this new investigation.
 
 ## Research Report
 
-[Quasars Probing Protolcusters Report](../Report/Research_Project_Report.pdf)
+[Quasars Probing Protolcusters Report](https://github.com/alexwoodsy/4th_year_project_git/blob/master/Report/Research_Project_Report.pdf)
 
 ## Authors
 
